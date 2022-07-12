@@ -1,0 +1,70 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="2206_01.xml">
+    <changeSet id="2022-06-26-initial-ddls" author="alex">
+        <createTable tableName="users">
+            <column name="user_uuid" type="UUID">
+                <constraints primaryKey="true" />
+            </column>
+            <column name="name" type="varchar" >
+                <constraints nullable="false" />
+            </column>
+            <column name="create_dtm" type="timestamp" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <sql>
+            create type task_scale as enum('FIBONACCI');
+        </sql>
+        <sql>
+            create type task_status as enum('ACTIVE', 'FINISHED', 'DELETED');
+        </sql>
+        <createTable tableName="tasks">
+            <column name="task_uuid" type="UUID">
+                <constraints primaryKey="true" />
+            </column>
+            <column name="user_uuid" type="UUID">
+                <constraints nullable="false" />
+            </column>
+            <column name="name" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar" />
+            <column name="scale" type="task_scale" >
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="task_status" >
+                <constraints nullable="false" />
+            </column>
+            <column name="create_dtm" type="timestamp" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="tasks" indexName="tasks_user_uuid_i">
+            <column name="user_uuid" />
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="tasks" baseColumnNames="user_uuid" constraintName="tasks_user_uuid_fk"
+                                 referencedTableName="users" referencedColumnNames="user_uuid" />
+    </changeSet>
+
+    <changeSet id="2022-06-30-create-votes-table" author="a.pervushin">
+        <createTable tableName="votes">
+            <column name="task_uuid" type="UUID">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="user_uuid" type="UUID">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="vote" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="votes" baseColumnNames="task_uuid" constraintName="votes_task_uuid_fk"
+                                 referencedTableName="tasks" referencedColumnNames="task_uuid" />
+        <addForeignKeyConstraint baseTableName="votes" baseColumnNames="user_uuid" constraintName="votes_user_uuid_fk"
+                                 referencedTableName="users" referencedColumnNames="user_uuid" />
+    </changeSet>
+</databaseChangeLog>
