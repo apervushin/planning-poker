@@ -7,7 +7,5 @@ public enum FibonacciValue {
     VALUE_5,
     VALUE_8,
     VALUE_13,
-    VALUE_21,
-    VALUE_34,
-    VALUE_55
+    VALUE_21
 }
