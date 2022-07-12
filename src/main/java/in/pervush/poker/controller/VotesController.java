@@ -5,6 +5,7 @@ import in.pervush.poker.exception.NotFoundException;
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.votes.CreateVoteRequest;
+import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.model.votes.VotesStatView;
 import in.pervush.poker.service.VotesService;
 import in.pervush.poker.utils.RequestHelper;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VotesController {
 
-    private final List<VotesService<?>> services;
+    private final List<VotesService> services;
     private final RequestHelper requestHelper;
 
     @Operation(
@@ -74,7 +74,7 @@ public class VotesController {
         for (final var service : services) {
             try {
                 return service.getVotesStat(taskUuid).entrySet().stream()
-                        .sorted(Comparator.comparing(Map.Entry::getKey))
+                        .sorted(Map.Entry.comparingByKey())
                         .map(v -> new VotesStatView(v.getKey().name(), v.getValue()))
                         .collect(Collectors.toList());
             } catch (NotFoundException ignored) {}
@@ -82,7 +82,7 @@ public class VotesController {
         throw new NotFoundException();
     }
 
-    private VotesService<?> getService(String vote) {
+    private VotesService getService(VoteValue vote) {
         for (final var service : services) {
             if (service.isValidVote(vote)) {
                 return service;

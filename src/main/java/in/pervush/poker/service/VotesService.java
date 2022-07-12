@@ -7,6 +7,7 @@ import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.model.tasks.Status;
 import in.pervush.poker.model.votes.DBVote;
+import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.repository.postgres.VotesMapper;
@@ -19,25 +20,25 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public abstract class VotesService<T extends Enum<T>> {
+public abstract class VotesService {
 
     private final VotesMapper mapper;
     private final UsersRepository usersRepository;
-    protected final TasksRepository tasksRepository;
+    private final TasksRepository tasksRepository;
+    private final Scale scale;
 
-    public abstract Map<T, List<String>> getVotesStat(UUID taskUuid);
+    public boolean isValidVote(final VoteValue vote) {
+        return vote.getScale() == scale;
+    }
 
-    public abstract boolean isValidVote(String vote);
-
-    public abstract void createVote(UUID userUuid, UUID taskUuid, String vote);
-    protected void createVote(final UUID taskUuid, final UUID userUuid, final T voteValue) {
+    public void createVote(final UUID taskUuid, final UUID userUuid, final VoteValue voteValue) {
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid);
         validateTaskStatusActive(dbTask);
         usersRepository.getUser(userUuid);
-        mapper.createVote(taskUuid, userUuid, voteValue.ordinal(), InstantUtils.now());
+        mapper.createVote(taskUuid, userUuid, voteValue, InstantUtils.now());
     }
 
-    protected Map<Integer, List<String>> getVotesStat(final UUID taskUuid, final Scale scale) {
+    public Map<VoteValue, List<String>> getVotesStat(final UUID taskUuid) {
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid);
         if (dbTask.scale() != scale) {
             throw new NotFoundException();

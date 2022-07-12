@@ -7,8 +7,6 @@ import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Repository

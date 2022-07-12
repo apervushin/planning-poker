@@ -14,5 +14,5 @@ public class CreateVoteRequest {
 
     @Schema(required = true)
     @NotBlank
-    private String value;
+    private VoteValue value;
 }
