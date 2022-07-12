@@ -47,7 +47,7 @@ public class FibonacciVotesServiceTests {
     @BeforeEach
     void initUserAndTask() {
         usersRepository.createUser(USER_UUID, USER_NAME);
-        taskUuid = tasksService.createTask(USER_UUID, "Test task", "http://localhost", Scale.FIBONACCI)
+        taskUuid = tasksService.createTask(USER_UUID, "Test task", "http://google.com", Scale.FIBONACCI)
                 .taskUuid();
     }
 

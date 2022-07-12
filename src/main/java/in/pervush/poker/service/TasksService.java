@@ -7,6 +7,7 @@ import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.model.tasks.Status;
 import in.pervush.poker.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +19,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TasksService {
 
-    public final static int TASK_NAME_NAME_MAX_LENGTH = 100;
-    public final static int TASK_URL_NAME_MAX_LENGTH = 100;
+    public static final int TASK_NAME_NAME_MAX_LENGTH = 100;
+    public static final int TASK_URL_NAME_MAX_LENGTH = 100;
+    private static final UrlValidator URL_VALIDATOR = new UrlValidator(new String[] {"http", "https"});
 
     private final TasksRepository tasksRepository;
 
@@ -61,9 +63,9 @@ public class TasksService {
         if (url == null) {
             return;
         }
-        if (Strings.isBlank(url) || url.length() > TASK_URL_NAME_MAX_LENGTH) {
+
+        if (Strings.isBlank(url) || url.length() > TASK_URL_NAME_MAX_LENGTH || !URL_VALIDATOR.isValid(url)) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_URL);
         }
-        // TODO validate url
     }
 }

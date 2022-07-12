@@ -44,16 +44,27 @@ public class TasksServiceTests {
     }
 
     @Test
+    void getTask_notFoundException() {
+        assertThrows(NotFoundException.class, () -> tasksService.getTask(UUID.randomUUID()));
+    }
+
+    @Test
     void createAndGetTask_success() {
         final var expected = tasksService.createTask(USER_UUID, "Test task",
-                "http://localhost:1234/task?param=123#test", Scale.FIBONACCI);
+                "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         final var actual = tasksService.getTask(expected.taskUuid());
         assertEquals(expected, actual);
     }
 
     @Test
-    void getTask_notFoundException() {
-        assertThrows(NotFoundException.class, () -> tasksService.getTask(UUID.randomUUID()));
+    void createAndGetTask_invalidDomain_errorStatusException() {
+        final var ex = assertThrows(ErrorStatusException.class, () -> tasksService.createTask(
+                USER_UUID,
+                RandomStringUtils.random(TasksService.TASK_NAME_NAME_MAX_LENGTH + 1),
+                "http://google.comm:1234/task?param=123#test",
+                Scale.FIBONACCI
+        ));
+        assertEquals(ErrorStatus.INVALID_TASK_NAME, ex.getStatus());
     }
 
     @Test
@@ -61,7 +72,7 @@ public class TasksServiceTests {
         final var ex = assertThrows(ErrorStatusException.class, () -> tasksService.createTask(
                 USER_UUID,
                 RandomStringUtils.random(TasksService.TASK_NAME_NAME_MAX_LENGTH + 1),
-                "http://localhost:1234/task?param=123#test",
+                "http://google.com:1234/task?param=123#test",
                 Scale.FIBONACCI
         ));
         assertEquals(ErrorStatus.INVALID_TASK_NAME, ex.getStatus());
@@ -69,7 +80,7 @@ public class TasksServiceTests {
 
     @Test
     void createAndGetTask_tooLongUrl_errorStatusException() {
-        final String validUrl = "http://localhost:1234/task?param=123";
+        final String validUrl = "http://google.com:1234/task?param=123";
         final var ex = assertThrows(ErrorStatusException.class, () -> tasksService.createTask(
                 USER_UUID,
                 "Test task",
@@ -82,7 +93,7 @@ public class TasksServiceTests {
     @Test
     void createAndFinishTask_success() {
         final var expected = tasksService.createTask(USER_UUID, "Test task",
-                "http://localhost:1234/task?param=123#test", Scale.FIBONACCI);
+                "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.finishTask(expected.taskUuid(), expected.userUuid());
         final var actual = tasksService.getTask(expected.taskUuid());
         assertEquals(Status.FINISHED, actual.status());
@@ -91,7 +102,7 @@ public class TasksServiceTests {
     @Test
     void createAndDeleteTask_success() {
         final var expected = tasksService.createTask(USER_UUID, "Test task",
-                "http://localhost:1234/task?param=123#test", Scale.FIBONACCI);
+                "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.deleteTask(expected.taskUuid(), expected.userUuid());
         assertThrows(NotFoundException.class, () -> tasksService.getTask(expected.taskUuid()));
     }
