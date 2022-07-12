@@ -32,6 +32,9 @@ public abstract class VotesService {
     }
 
     public void createVote(final UUID taskUuid, final UUID userUuid, final VoteValue voteValue) {
+        if (!isValidVote(voteValue)) {
+            throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
+        }
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid);
         validateTaskStatusActive(dbTask);
         usersRepository.getUser(userUuid);

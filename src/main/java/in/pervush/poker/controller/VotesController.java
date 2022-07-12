@@ -75,7 +75,7 @@ public class VotesController {
             try {
                 return service.getVotesStat(taskUuid).entrySet().stream()
                         .sorted(Map.Entry.comparingByKey())
-                        .map(v -> new VotesStatView(v.getKey().name(), v.getValue()))
+                        .map(v -> new VotesStatView(v.getKey(), v.getValue()))
                         .collect(Collectors.toList());
             } catch (NotFoundException ignored) {}
         }

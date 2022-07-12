@@ -6,7 +6,7 @@ import java.util.List;
 
 public record VotesStatView(
         @Schema(required = true)
-        String value,
+        VoteValue value,
         @Schema(required = true)
         List<String> userNames) {
 }
