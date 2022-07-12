@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SecurityScheme(
         name = "Authorization",
         type = SecuritySchemeType.APIKEY,
-        in = SecuritySchemeIn.HEADER,
+        in = SecuritySchemeIn.COOKIE,
         paramName = RequestHelper.USER_UUID_COOKIE_NAME
 )
 @OpenAPIDefinition(
