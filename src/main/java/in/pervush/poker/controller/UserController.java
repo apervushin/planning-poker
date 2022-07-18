@@ -8,6 +8,7 @@ import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.user.CreateUserRequest;
 import in.pervush.poker.model.user.UserView;
+import in.pervush.poker.repository.AuthenticationRepository;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +38,7 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationRepository authenticationRepository;
     private final RequestHelper requestHelper;
 
     @Operation(
@@ -51,7 +53,8 @@ public class UserController {
     public void createUser(@RequestBody @Valid final CreateUserRequest request) {
         try {
             final var dbUser = userService.createUser(request.email(), request.password(), request.name());
-            requestHelper.setUserUuidCookie(dbUser.userUuid());
+            final var token = authenticationRepository.createToken(dbUser.userUuid());
+            requestHelper.setAuthCookie(token);
         } catch (EmailExistsException ex) {
             throw new ErrorStatusException(ErrorStatus.USER_EMAIL_EXISTS);
         }

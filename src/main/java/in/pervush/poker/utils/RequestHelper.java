@@ -1,6 +1,9 @@
 package in.pervush.poker.utils;
 
+import in.pervush.poker.configuration.AuthenticationProperties;
+import in.pervush.poker.exception.TokenNotExistsException;
 import in.pervush.poker.exception.UnauthorizedException;
+import in.pervush.poker.repository.AuthenticationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
@@ -17,6 +20,8 @@ public class RequestHelper {
     public static final String USER_UUID_COOKIE_NAME = "SESSIONID";
     private static final String COOKIE_PATH = "/api/";
 
+    private final AuthenticationRepository authenticationRepository;
+    private final AuthenticationProperties authenticationProperties;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
@@ -27,17 +32,17 @@ public class RequestHelper {
         }
 
         try {
-            return UUID.fromString(cookie.getValue());
-        } catch (IllegalArgumentException | NullPointerException ex) {
+            return authenticationRepository.getUserUuid(cookie.getValue());
+        } catch (TokenNotExistsException ex) {
             throw new UnauthorizedException();
         }
     }
 
-    public void setUserUuidCookie(final UUID userUuid) {
-        final var cookie = new Cookie(USER_UUID_COOKIE_NAME, userUuid.toString());
+    public void setAuthCookie(final String token) {
+        final var cookie = new Cookie(USER_UUID_COOKIE_NAME, token);
         cookie.setSecure(true);
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(Integer.MAX_VALUE);
+        cookie.setMaxAge((int)authenticationProperties.getCookieTtl().toSeconds());
         cookie.setPath(COOKIE_PATH);
         response.addCookie(cookie);
     }

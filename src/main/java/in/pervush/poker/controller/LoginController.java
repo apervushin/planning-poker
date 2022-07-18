@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,16 +41,15 @@ public class LoginController {
                     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void login(@RequestBody @Valid final LoginRequest request) {
+    public ResponseEntity<Void> login(@RequestBody @Valid final LoginRequest request) {
         try {
-            final var dbUser = service.login(request.email(), request.password());
-            requestHelper.setUserUuidCookie(dbUser.userUuid());
+            final var token = service.login(request.email(), request.password());
+            requestHelper.setAuthCookie(token);
+            return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (UserNotFoundException ex) {
-            throw new UnauthorizedException();
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-
     }
 
 }

@@ -1,8 +1,10 @@
 package in.pervush.poker.service;
 
+import in.pervush.poker.configuration.AuthenticationProperties;
 import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.TestPostgresConfiguration;
 import in.pervush.poker.exception.UserNotFoundException;
+import in.pervush.poker.repository.AuthenticationRepository;
 import in.pervush.poker.repository.UsersRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +14,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringJUnitConfig({UsersRepository.class, AuthenticationService.class})
+@SpringJUnitConfig({UsersRepository.class, AuthenticationService.class, AuthenticationRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
-@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
+@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class, AuthenticationProperties.class})
 @Transactional
 public class AuthenticationServiceTests {
 
@@ -32,8 +34,7 @@ public class AuthenticationServiceTests {
     void login_success() {
         final var password = "abc";
         final var expected = usersRepository.createUser("test@example.com", password, "Test");
-        final var actual = service.login(expected.email(), password);
-        assertEquals(expected, actual);
+        assertNotNull(service.login(expected.email(), password));
     }
 
     @Test
