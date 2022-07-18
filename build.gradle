@@ -26,6 +26,7 @@ sourceSets {
 dependencies {
     implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.7.1')
     implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.7.1')
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.7.1')
 
     implementation(group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9')
 

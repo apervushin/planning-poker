@@ -14,7 +14,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RequestHelper {
 
-    public static final String USER_UUID_COOKIE_NAME = "x-user-uuid";
+    public static final String USER_UUID_COOKIE_NAME = "SESSIONID";
     private static final String COOKIE_PATH = "/api/";
 
     private final HttpServletRequest request;

@@ -1,5 +1,6 @@
 package in.pervush.poker.service;
 
+import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.TestPostgresConfiguration;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.NotFoundException;
@@ -26,11 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringJUnitConfig({UsersRepository.class, TasksService.class, TasksRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
-@Import(TestPostgresConfiguration.class)
+@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
 @Transactional
 public class TasksServiceTests {
-
-    private static final UUID USER_UUID = UUID.randomUUID();
 
     @Autowired
     private UsersRepository usersRepository;
@@ -38,9 +37,11 @@ public class TasksServiceTests {
     @Autowired
     private TasksService tasksService;
 
+    private UUID userUuid;
+
     @BeforeEach
     void initUser() {
-        usersRepository.createUser(USER_UUID, "Test user");
+        userUuid = usersRepository.createUser("text@example.com", "abc", "Test user").userUuid();
     }
 
     @Test
@@ -50,7 +51,7 @@ public class TasksServiceTests {
 
     @Test
     void createAndGetTask_success() {
-        final var expected = tasksService.createTask(USER_UUID, "Test task",
+        final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         final var actual = tasksService.getTask(expected.taskUuid());
         assertEquals(expected, actual);
@@ -59,7 +60,7 @@ public class TasksServiceTests {
     @Test
     void createAndGetTask_invalidDomain_errorStatusException() {
         final var ex = assertThrows(ErrorStatusException.class, () -> tasksService.createTask(
-                USER_UUID,
+                userUuid,
                 RandomStringUtils.random(TasksService.TASK_NAME_NAME_MAX_LENGTH + 1),
                 "http://google.comm:1234/task?param=123#test",
                 Scale.FIBONACCI
@@ -70,7 +71,7 @@ public class TasksServiceTests {
     @Test
     void createAndGetTask_tooLongTaskName_errorStatusException() {
         final var ex = assertThrows(ErrorStatusException.class, () -> tasksService.createTask(
-                USER_UUID,
+                userUuid,
                 RandomStringUtils.random(TasksService.TASK_NAME_NAME_MAX_LENGTH + 1),
                 "http://google.com:1234/task?param=123#test",
                 Scale.FIBONACCI
@@ -82,7 +83,7 @@ public class TasksServiceTests {
     void createAndGetTask_tooLongUrl_errorStatusException() {
         final String validUrl = "http://google.com:1234/task?param=123";
         final var ex = assertThrows(ErrorStatusException.class, () -> tasksService.createTask(
-                USER_UUID,
+                userUuid,
                 "Test task",
                 validUrl + RandomStringUtils.random(TasksService.TASK_NAME_NAME_MAX_LENGTH - validUrl.length() + 1),
                 Scale.FIBONACCI
@@ -92,7 +93,7 @@ public class TasksServiceTests {
 
     @Test
     void createAndFinishTask_success() {
-        final var expected = tasksService.createTask(USER_UUID, "Test task",
+        final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.finishTask(expected.taskUuid(), expected.userUuid());
         final var actual = tasksService.getTask(expected.taskUuid());
@@ -101,7 +102,7 @@ public class TasksServiceTests {
 
     @Test
     void createAndDeleteTask_success() {
-        final var expected = tasksService.createTask(USER_UUID, "Test task",
+        final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.deleteTask(expected.taskUuid(), expected.userUuid());
         assertThrows(NotFoundException.class, () -> tasksService.getTask(expected.taskUuid()));

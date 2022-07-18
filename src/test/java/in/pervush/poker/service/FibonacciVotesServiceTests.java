@@ -1,5 +1,6 @@
 package in.pervush.poker.service;
 
+import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.TestPostgresConfiguration;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.NotFoundException;
@@ -27,13 +28,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringJUnitConfig({FibonacciVotesService.class, UsersRepository.class, TasksRepository.class, TasksService.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
-@Import(TestPostgresConfiguration.class)
+@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
 @Transactional
 public class FibonacciVotesServiceTests {
 
-    private static final UUID USER_UUID = UUID.randomUUID();
+    private static final String USER_EMAIL = "test@example.com";
+    private static final String USER_PASSWORD = "abc";
     private static final String USER_NAME = "Test user";
     private UUID taskUuid;
+    private UUID userUuid;
 
     @Autowired
     private FibonacciVotesService service;
@@ -46,21 +49,21 @@ public class FibonacciVotesServiceTests {
 
     @BeforeEach
     void initUserAndTask() {
-        usersRepository.createUser(USER_UUID, USER_NAME);
-        taskUuid = tasksService.createTask(USER_UUID, "Test task", "http://google.com", Scale.FIBONACCI)
+        userUuid = usersRepository.createUser(USER_EMAIL, USER_PASSWORD, USER_NAME).userUuid();
+        taskUuid = tasksService.createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI)
                 .taskUuid();
     }
 
     @Test
     void createVote() {
         final var ex = assertThrows(ErrorStatusException.class,
-                () -> service.createVote(taskUuid, USER_UUID, VoteValue.SIZE_XS));
+                () -> service.createVote(taskUuid, userUuid, VoteValue.SIZE_XS));
         assertEquals(ErrorStatus.INVALID_VOTE_VALUE, ex.getStatus());
     }
 
     @Test
     void getVotesStat_invalidTaskStatus() {
-        service.createVote(taskUuid, USER_UUID, VoteValue.VALUE_3);
+        service.createVote(taskUuid, userUuid, VoteValue.VALUE_3);
         final var ex = assertThrows(ErrorStatusException.class, () -> service.getVotesStat(taskUuid));
         assertEquals(ErrorStatus.INVALID_TASK_STATUS, ex.getStatus());
     }
@@ -68,23 +71,23 @@ public class FibonacciVotesServiceTests {
     @Test
     void getVotesStat_success() {
         // create second user
-        final var user2Uuid = UUID.randomUUID();
         final String user2Name = "qwerty1";
-        usersRepository.createUser(user2Uuid, user2Name);
+        final var user2Uuid = usersRepository.createUser("test1@example.com", USER_PASSWORD, user2Name)
+                .userUuid();
 
         // create third user
-        final var user3Uuid = UUID.randomUUID();
         final String user3Name = "qwerty2";
-        usersRepository.createUser(user3Uuid, user3Name);
+        final var user3Uuid = usersRepository.createUser("test2@example.com", USER_PASSWORD, user3Name)
+                .userUuid();
 
         // create votes
-        service.createVote(taskUuid, USER_UUID, VoteValue.VALUE_3);
-        service.createVote(taskUuid, USER_UUID, VoteValue.VALUE_5); // vote with another value
+        service.createVote(taskUuid, userUuid, VoteValue.VALUE_3);
+        service.createVote(taskUuid, userUuid, VoteValue.VALUE_5); // vote with another value
         service.createVote(taskUuid, user2Uuid, VoteValue.VALUE_1);
         service.createVote(taskUuid, user3Uuid, VoteValue.VALUE_1);
 
         // finish task
-        tasksService.finishTask(taskUuid, USER_UUID);
+        tasksService.finishTask(taskUuid, userUuid);
 
         // validate
         final var expected = Map.of(
@@ -96,8 +99,8 @@ public class FibonacciVotesServiceTests {
 
     @Test
     void getVotesStat_notFoundException() {
-        service.createVote(taskUuid, USER_UUID, VoteValue.VALUE_3);
-        tasksService.deleteTask(taskUuid, USER_UUID);
+        service.createVote(taskUuid, userUuid, VoteValue.VALUE_3);
+        tasksService.deleteTask(taskUuid, userUuid);
         assertThrows(NotFoundException.class, () -> service.getVotesStat(taskUuid));
     }
 }

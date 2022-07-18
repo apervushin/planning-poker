@@ -33,4 +33,19 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="2022-07-17-users-email-password_encoded-columns" author="alex">
+        <addColumn tableName="users">
+            <column name="email" type="varchar" />
+            <column name="password_encoded" type="varchar" />
+        </addColumn>
+        <delete tableName="votes" />
+        <delete tableName="tasks" />
+        <delete tableName="users" />
+        <addNotNullConstraint tableName="users" columnName="email" />
+        <addNotNullConstraint tableName="users" columnName="password_encoded" />
+        <createIndex tableName="users" indexName="users_email_i" unique="true">
+            <column name="email" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

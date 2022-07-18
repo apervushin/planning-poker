@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
@@ -14,17 +15,26 @@ import java.util.UUID;
 
 public interface UsersMapper {
 
-    @Insert("insert into users(user_uuid, name, create_dtm) values(#{userUuid}, #{name}, #{createDtm})")
+    @Insert("insert into users(user_uuid, email, password_encoded, name, create_dtm) " +
+            "values(#{userUuid}, #{email}, #{passwordEncoded}, #{name}, #{createDtm})")
     void createUser(@Param("userUuid") UUID userUuid,
+                    @Param("email") String email,
+                    @Param("passwordEncoded") String passwordEncoded,
                     @Param("name") String name,
                     @Param("createDtm") Instant createDtm);
 
     @Results(id = "user")
     @ConstructorArgs(value = {
             @Arg(column = "user_uuid", javaType = UUID.class),
+            @Arg(column = "email", javaType = String.class),
+            @Arg(column = "password_encoded", javaType = String.class),
             @Arg(column = "name", javaType = String.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
     })
     @Select("select * from users where user_uuid = #{userUuid}")
     Optional<DBUser> getUser(@Param("userUuid") UUID userUuid);
+
+    @ResultMap("user")
+    @Select("select * from users where email = #{email}")
+    Optional<DBUser> getUserByEmail(@Param("email") String email);
 }
