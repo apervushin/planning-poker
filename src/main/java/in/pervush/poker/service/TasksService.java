@@ -46,7 +46,7 @@ public class TasksService {
         if (dbTask.status() != Status.ACTIVE) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
-        tasksRepository.finishTask(taskUuid);
+        tasksRepository.finishTask(taskUuid, userUuid);
     }
 
     public void deleteTask(final UUID taskUuid, final UUID userUuid) {

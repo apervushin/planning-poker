@@ -30,12 +30,12 @@ public class TasksRepository {
         return mapper.getTaskLock(taskUuid, userUuid, Status.DELETED).orElseThrow(NotFoundException::new);
     }
 
-    public void finishTask(UUID taskUuid) {
-        mapper.setTaskStatusByTaskUuid(taskUuid, Status.FINISHED);
+    public void finishTask(UUID taskUuid, UUID userUuid) {
+        mapper.setTaskStatus(taskUuid, userUuid, Status.FINISHED);
     }
 
     public void deleteTask(UUID taskUuid, UUID userUuid) {
-        final boolean updated = mapper.setTaskStatusByTaskUuidAnUserUuid(taskUuid, userUuid, Status.DELETED);
+        final boolean updated = mapper.setTaskStatus(taskUuid, userUuid, Status.DELETED);
         if (!updated) {
             throw new NotFoundException();
         }
@@ -45,7 +45,7 @@ public class TasksRepository {
         final var now = InstantUtils.now();
         final var status = Status.ACTIVE;
         mapper.createTask(userUuid, taskUuid, name, url, scale, status, now);
-        return new DBTask(taskUuid, userUuid, name, url, scale, status, now);
+        return new DBTask(taskUuid, userUuid, name, url, scale, status, now, 0);
     }
 
 }

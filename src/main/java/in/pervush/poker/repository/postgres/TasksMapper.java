@@ -28,37 +28,41 @@ public interface TasksMapper {
             @Arg(column = "scale", javaType = Scale.class),
             @Arg(column = "status", javaType = Status.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
+            @Arg(column = "votes_cnt", javaType = int.class),
     })
-    @Select("select * " +
-            "from tasks " +
-            "where user_uuid = #{userUuid} and status <> cast(#{excludedStatus} as task_status) " +
-            "order by create_dtm desc")
+    @Select("select t.*, coalesce(v.votes_cnt) as votes_cnt " +
+            "from tasks t " +
+            "left join ( " +
+            "select task_uuid, count(*) as votes_cnt " +
+            "from votes " +
+            "where user_uuid = #{userUuid} " +
+            "group by task_uuid " +
+            ") v on t.task_uuid = v.task_uuid " +
+            "where t.user_uuid = #{userUuid} and t.status <> cast(#{excludedStatus} as task_status) " +
+            "order by t.create_dtm desc")
     List<DBTask> getTasks(@Param("userUuid") UUID userUuid, @Param("excludedStatus") Status excludedStatus);
 
     @ResultMap("task")
-    @Select("select * " +
-            "from tasks " +
-            "where task_uuid = #{taskUuid} and status <> cast(#{excludedStatus} as task_status)")
+    @Select("select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt " +
+            "from tasks t " +
+            "where t.task_uuid = #{taskUuid} and t.status <> cast(#{excludedStatus} as task_status)")
     Optional<DBTask> getTask(@Param("taskUuid") UUID taskUuid, @Param("excludedStatus") Status excludedStatus);
 
     @ResultMap("task")
-    @Select("select * " +
-            "from tasks " +
-            "where task_uuid = #{taskUuid} and user_uuid = #{userUuid} and status <> cast(#{excludedStatus} as task_status) " +
+    @Select("select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt " +
+            "from tasks t " +
+            "where t.task_uuid = #{taskUuid} and t.status <> cast(#{excludedStatus} as task_status)" +
             "for update")
     Optional<DBTask> getTaskLock(@Param("taskUuid") UUID taskUuid,
                                  @Param("userUuid") UUID userUuid,
                                  @Param("excludedStatus") Status excludedStatus);
 
-    @Update("update tasks set status = cast(#{status} as task_status) where task_uuid = #{taskUuid}")
-    void setTaskStatusByTaskUuid(@Param("taskUuid") UUID taskUuid, @Param("status") Status status);
-
     @Update("update tasks " +
             "set status = cast(#{status} as task_status) " +
             "where task_uuid = #{taskUuid} and user_uuid = #{userUuid}")
-    boolean setTaskStatusByTaskUuidAnUserUuid(@Param("taskUuid") UUID taskUuid,
-                                              @Param("userUuid") UUID userUuid,
-                                              @Param("status") Status status);
+    boolean setTaskStatus(@Param("taskUuid") UUID taskUuid,
+                          @Param("userUuid") UUID userUuid,
+                          @Param("status") Status status);
 
     @Insert("insert into tasks(user_uuid, task_uuid, name, url, scale, status, create_dtm) " +
             "values(#{userUuid}, #{taskUuid}, #{name}, #{url}, cast(#{scale} as task_scale), cast(#{status} as task_status), #{createDtm})")
