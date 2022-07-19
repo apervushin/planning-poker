@@ -40,9 +40,9 @@ public class RequestHelper {
 
     public void setAuthCookie(final String token) {
         final var cookie = new Cookie(USER_UUID_COOKIE_NAME, token);
-        cookie.setSecure(true);
+        cookie.setSecure(authenticationProperties.getCookie().isSsl());
         cookie.setHttpOnly(true);
-        cookie.setMaxAge((int)authenticationProperties.getCookieTtl().toSeconds());
+        cookie.setMaxAge((int)authenticationProperties.getCookie().getTtl().toSeconds());
         cookie.setPath(COOKIE_PATH);
         response.addCookie(cookie);
     }

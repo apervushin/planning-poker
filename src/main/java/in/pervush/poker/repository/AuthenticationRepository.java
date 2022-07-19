@@ -16,7 +16,7 @@ public class AuthenticationRepository {
     private final Cache<String, UUID> tokensCache;
 
     public AuthenticationRepository(final AuthenticationProperties properties) {
-        tokensCache = CacheBuilder.newBuilder().expireAfterAccess(properties.getCookieTtl()).build();
+        tokensCache = CacheBuilder.newBuilder().expireAfterAccess(properties.getCookie().getTtl()).build();
     }
 
     public UUID getUserUuid(final String token) {
