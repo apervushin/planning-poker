@@ -10,12 +10,12 @@ public record TasksView(
         @Schema(required = true) String name,
         String url,
         @Schema(required = true) Scale scale,
-        @Schema(required = true) boolean active,
+        @Schema(required = true) boolean finished,
         @Schema(required = true) String userName,
         @Schema(required = true) int votesCount) {
 
     public static TasksView of(final DBTask dbTask, final DBUser dbUser) {
         return new TasksView(dbTask.taskUuid(), dbTask.name(), dbTask.url(), dbTask.scale(),
-                dbTask.status() == Status.ACTIVE, dbUser.name(), dbTask.votesCount());
+                dbTask.finished(), dbUser.name(), dbTask.votesCount());
     }
 }

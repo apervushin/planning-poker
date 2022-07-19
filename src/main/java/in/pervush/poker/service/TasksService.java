@@ -4,7 +4,6 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
-import in.pervush.poker.model.tasks.Status;
 import in.pervush.poker.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -43,7 +42,7 @@ public class TasksService {
     @Transactional
     public void finishTask(final UUID taskUuid, final UUID userUuid) {
         final var dbTask = tasksRepository.getNotDeletedTaskLock(taskUuid, userUuid);
-        if (dbTask.status() != Status.ACTIVE) {
+        if (dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
         tasksRepository.finishTask(taskUuid, userUuid);

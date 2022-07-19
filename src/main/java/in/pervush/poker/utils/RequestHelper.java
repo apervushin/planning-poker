@@ -17,16 +17,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RequestHelper {
 
-    public static final String USER_UUID_COOKIE_NAME = "SESSIONID";
-    private static final String COOKIE_PATH = "/api/";
+    public static final String SESSION_COOKIE_NAME = "SESSIONID";
+    private static final String SESSION_COOKIE_PATH = "/api/";
 
     private final AuthenticationRepository authenticationRepository;
     private final AuthenticationProperties authenticationProperties;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
-    public UUID getUserUuidCookie() {
-        final var cookie = WebUtils.getCookie(request, USER_UUID_COOKIE_NAME);
+    public UUID getAuthenticatedUserUuid() {
+        final var cookie = WebUtils.getCookie(request, SESSION_COOKIE_NAME);
         if (cookie == null) {
             throw new UnauthorizedException();
         }
@@ -39,11 +39,11 @@ public class RequestHelper {
     }
 
     public void setAuthCookie(final String token) {
-        final var cookie = new Cookie(USER_UUID_COOKIE_NAME, token);
+        final var cookie = new Cookie(SESSION_COOKIE_NAME, token);
         cookie.setSecure(authenticationProperties.getCookie().isSsl());
         cookie.setHttpOnly(true);
         cookie.setMaxAge((int)authenticationProperties.getCookie().getTtl().toSeconds());
-        cookie.setPath(COOKIE_PATH);
+        cookie.setPath(SESSION_COOKIE_PATH);
         response.addCookie(cookie);
     }
 

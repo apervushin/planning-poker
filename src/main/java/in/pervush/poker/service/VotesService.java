@@ -5,7 +5,6 @@ import in.pervush.poker.exception.NotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
-import in.pervush.poker.model.tasks.Status;
 import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
@@ -47,7 +46,7 @@ public abstract class VotesService {
         if (dbTask.scale() != scale) {
             throw new NotFoundException();
         }
-        if (dbTask.status() != Status.FINISHED) {
+        if (!dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
         return mapper.getVotes(taskUuid).stream()
@@ -55,7 +54,7 @@ public abstract class VotesService {
     }
 
     private static void validateTaskStatusActive(final DBTask dbTask) {
-        if (dbTask.status() != Status.ACTIVE) {
+        if (dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
     }

@@ -2,7 +2,6 @@ package in.pervush.poker.repository.postgres;
 
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
-import in.pervush.poker.model.tasks.Status;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.Insert;
@@ -26,51 +25,67 @@ public interface TasksMapper {
             @Arg(column = "name", javaType = String.class),
             @Arg(column = "url", javaType = String.class),
             @Arg(column = "scale", javaType = Scale.class),
-            @Arg(column = "status", javaType = Status.class),
+            @Arg(column = "is_finished", javaType = boolean.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
             @Arg(column = "votes_cnt", javaType = int.class),
     })
-    @Select("select t.*, coalesce(v.votes_cnt, 0) as votes_cnt " +
-            "from tasks t " +
-            "left join ( " +
-            "select task_uuid, count(*) as votes_cnt " +
-            "from votes " +
-            "where user_uuid = #{userUuid} " +
-            "group by task_uuid " +
-            ") v on t.task_uuid = v.task_uuid " +
-            "where t.user_uuid = #{userUuid} and t.status <> cast(#{excludedStatus} as task_status) " +
-            "order by t.create_dtm desc")
-    List<DBTask> getTasks(@Param("userUuid") UUID userUuid, @Param("excludedStatus") Status excludedStatus);
+    @Select("""
+            select t.*, coalesce(v.votes_cnt, 0) as votes_cnt
+            from tasks t
+            left join ( "
+                select task_uuid, count(*) as votes_cnt
+                from votes
+                where user_uuid = #{userUuid}
+                group by task_uuid
+            ) v on t.task_uuid = v.task_uuid
+            where not t.is_deleted
+                and t.user_uuid = #{userUuid}
+            order by t.create_dtm desc
+            """)
+    List<DBTask> getNotDeletedTasks(@Param("userUuid") UUID userUuid);
 
     @ResultMap("task")
-    @Select("select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt " +
-            "from tasks t " +
-            "where t.task_uuid = #{taskUuid} and t.status <> cast(#{excludedStatus} as task_status)")
-    Optional<DBTask> getTask(@Param("taskUuid") UUID taskUuid, @Param("excludedStatus") Status excludedStatus);
+    @Select("""
+            select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt
+            from tasks t
+            where not t.is_deleted and t.task_uuid = #{taskUuid}
+            """)
+    Optional<DBTask> getNotDeletedTask(@Param("taskUuid") UUID taskUuid);
 
     @ResultMap("task")
-    @Select("select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt " +
-            "from tasks t " +
-            "where t.task_uuid = #{taskUuid} and t.status <> cast(#{excludedStatus} as task_status)" +
-            "for update")
-    Optional<DBTask> getTaskLock(@Param("taskUuid") UUID taskUuid,
-                                 @Param("userUuid") UUID userUuid,
-                                 @Param("excludedStatus") Status excludedStatus);
+    @Select("""
+            select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt
+            from tasks t
+            where not t.is_deleted and t.task_uuid = #{taskUuid}
+            for update
+            """)
+    Optional<DBTask> getNotDeletedTaskLock(@Param("taskUuid") UUID taskUuid,
+                                           @Param("userUuid") UUID userUuid);
 
-    @Update("update tasks " +
-            "set status = cast(#{status} as task_status) " +
-            "where task_uuid = #{taskUuid} and user_uuid = #{userUuid}")
-    boolean setTaskStatus(@Param("taskUuid") UUID taskUuid,
-                          @Param("userUuid") UUID userUuid,
-                          @Param("status") Status status);
+    @Update("""
+            update tasks
+            set is_finished = true
+            where not is_deleted and task_uuid = #{taskUuid} and user_uuid = #{userUuid}
+            """)
+    boolean setFinished(@Param("taskUuid") UUID taskUuid,
+                        @Param("userUuid") UUID userUuid);
 
-    @Insert("insert into tasks(user_uuid, task_uuid, name, url, scale, status, create_dtm) " +
-            "values(#{userUuid}, #{taskUuid}, #{name}, #{url}, cast(#{scale} as task_scale), cast(#{status} as task_status), #{createDtm})")
+    @Update("""
+            update tasks
+            set is_deleted = true
+            where not is_deleted and task_uuid = #{taskUuid} and user_uuid = #{userUuid}
+            """)
+    boolean setDeleted(@Param("taskUuid") UUID taskUuid,
+                       @Param("userUuid") UUID userUuid);
+
+    @Insert("""
+            insert into tasks(user_uuid, task_uuid, name, url, scale, create_dtm)
+            values(#{userUuid}, #{taskUuid}, #{name}, #{url}, cast(#{scale} as task_scale), #{createDtm})
+            """)
     void createTask(@Param("userUuid") UUID userUuid,
                     @Param("taskUuid") UUID taskUuid,
                     @Param("name") String name,
                     @Param("url") String url,
                     @Param("scale") Scale scale,
-                    @Param("status") Status status,
                     @Param("createDtm") Instant createDtm);
 }

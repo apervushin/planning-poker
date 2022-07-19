@@ -16,7 +16,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         name = "Authorization",
         type = SecuritySchemeType.APIKEY,
         in = SecuritySchemeIn.COOKIE,
-        paramName = RequestHelper.USER_UUID_COOKIE_NAME
+        paramName = RequestHelper.SESSION_COOKIE_NAME
 )
 @OpenAPIDefinition(
         servers = {@Server(url = "https://poker.pervush.in/"), @Server(url = "http://localhost:8080/")},

@@ -51,7 +51,7 @@ public class TasksController {
             }
     )
     public Collection<TasksListItemView> getTasks() {
-        return tasksService.getTasks(requestHelper.getUserUuidCookie()).stream().map(TasksListItemView::of).toList();
+        return tasksService.getTasks(requestHelper.getAuthenticatedUserUuid()).stream().map(TasksListItemView::of).toList();
     }
 
     @Operation(
@@ -64,7 +64,7 @@ public class TasksController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}")
     public TasksView getTask(@PathVariable("taskUuid") final UUID taskUuid) {
-        requestHelper.getUserUuidCookie();
+        requestHelper.getAuthenticatedUserUuid();
         final var dbTask = tasksService.getTask(taskUuid);
         final var dbUser = userService.getUser(dbTask.userUuid());
         return TasksView.of(dbTask, dbUser);
@@ -82,9 +82,9 @@ public class TasksController {
     @ResponseStatus(HttpStatus.CREATED)
     public TasksView createTask(@RequestBody @Valid final CreateTaskRequest request) {
         return TasksView.of(
-                tasksService.createTask(requestHelper.getUserUuidCookie(), request.getName(), request.getUrl(),
+                tasksService.createTask(requestHelper.getAuthenticatedUserUuid(), request.getName(), request.getUrl(),
                         request.getScale()),
-                userService.getUser(requestHelper.getUserUuidCookie())
+                userService.getUser(requestHelper.getAuthenticatedUserUuid())
         );
     }
 
@@ -100,7 +100,7 @@ public class TasksController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}/finish")
     @ResponseStatus(HttpStatus.CREATED)
     public void finishTask(@PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.finishTask(taskUuid, requestHelper.getUserUuidCookie());
+        tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid());
     }
 
     @Operation(
@@ -115,6 +115,6 @@ public class TasksController {
     @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTask(@PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.deleteTask(taskUuid, requestHelper.getUserUuidCookie());
+        tasksService.deleteTask(taskUuid, requestHelper.getAuthenticatedUserUuid());
     }
 }

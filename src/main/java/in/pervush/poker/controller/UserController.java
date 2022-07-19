@@ -38,7 +38,7 @@ public class UserController {
     @SecurityRequirement(name = "Authorization")
     public UserView getUser() {
         try {
-            final var userUuid = requestHelper.getUserUuidCookie();
+            final var userUuid = requestHelper.getAuthenticatedUserUuid();
             final var dbUser = userService.getUser(userUuid);
             return UserView.of(dbUser);
         } catch (UserNotFoundException ex) {

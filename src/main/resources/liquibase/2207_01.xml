@@ -48,4 +48,28 @@
             <column name="email" />
         </createIndex>
     </changeSet>
+
+    <changeSet id="2022-07-20-deleted-finished-flags" author="alex">
+        <addColumn tableName="tasks">
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="is_finished" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <update tableName="tasks">
+            <column name="is_finished" valueBoolean="true" />
+            <where>status = 'FINISHED'</where>
+        </update>
+        <update tableName="tasks">
+            <column name="is_deleted" valueBoolean="true" />
+            <where>status = 'DELETED'</where>
+        </update>
+        <dropColumn tableName="tasks" columnName="status" />
+        <sql>
+            drop type task_status
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

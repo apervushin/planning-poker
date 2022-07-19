@@ -57,7 +57,7 @@ public class VotesController {
     public void createVote(@PathVariable("taskUuid") final UUID taskUuid,
                            @RequestBody @Valid CreateVoteRequest request) {
         final var vote = request.getValue();
-        getService(vote).createVote(taskUuid, requestHelper.getUserUuidCookie(), vote);
+        getService(vote).createVote(taskUuid, requestHelper.getAuthenticatedUserUuid(), vote);
     }
 
     @Operation(
@@ -70,7 +70,7 @@ public class VotesController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VotesStatView> getVotes(@PathVariable("taskUuid") final UUID taskUuid) {
-        requestHelper.getUserUuidCookie();
+        requestHelper.getAuthenticatedUserUuid();
         for (final var service : services) {
             try {
                 return service.getVotesStat(taskUuid).entrySet().stream()

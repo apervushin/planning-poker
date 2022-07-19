@@ -6,7 +6,6 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.NotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.Scale;
-import in.pervush.poker.model.tasks.Status;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.UsersRepository;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,6 +22,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringJUnitConfig({UsersRepository.class, TasksService.class, TasksRepository.class})
 @ActiveProfiles("test")
@@ -97,7 +97,7 @@ public class TasksServiceTests {
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.finishTask(expected.taskUuid(), expected.userUuid());
         final var actual = tasksService.getTask(expected.taskUuid());
-        assertEquals(Status.FINISHED, actual.status());
+        assertTrue(actual.finished());
     }
 
     @Test
