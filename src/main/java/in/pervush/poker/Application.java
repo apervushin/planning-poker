@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 )
 @OpenAPIDefinition(
         servers = {@Server(url = "https://poker.pervush.in/"), @Server(url = "http://localhost:8080/")},
-        info = @Info(title = "Planing poker API", contact = @Contact(url = "https://github.com/apervushin/planing-poker"))
+        info = @Info(title = "Planing poker API", contact = @Contact(url = "https://github.com/apervushin/planning-poker"))
 
 )
 @SpringBootApplication
