@@ -30,7 +30,7 @@ public interface TasksMapper {
             @Arg(column = "create_dtm", javaType = Instant.class),
             @Arg(column = "votes_cnt", javaType = int.class),
     })
-    @Select("select t.*, coalesce(v.votes_cnt) as votes_cnt " +
+    @Select("select t.*, coalesce(v.votes_cnt, 0) as votes_cnt " +
             "from tasks t " +
             "left join ( " +
             "select task_uuid, count(*) as votes_cnt " +

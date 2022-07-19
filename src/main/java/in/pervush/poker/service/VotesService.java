@@ -37,6 +37,7 @@ public abstract class VotesService {
         }
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid);
         validateTaskStatusActive(dbTask);
+        validateTaskScale(dbTask, voteValue);
         usersRepository.getUser(userUuid);
         mapper.createVote(taskUuid, userUuid, voteValue, InstantUtils.now());
     }
@@ -56,6 +57,12 @@ public abstract class VotesService {
     private static void validateTaskStatusActive(final DBTask dbTask) {
         if (dbTask.status() != Status.ACTIVE) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
+        }
+    }
+
+    private void validateTaskScale(final DBTask dbTask, final VoteValue voteValue) {
+        if (dbTask.scale() != voteValue.getScale()) {
+            throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
         }
     }
 }
