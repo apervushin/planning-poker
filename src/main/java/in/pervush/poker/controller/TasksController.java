@@ -2,10 +2,8 @@ package in.pervush.poker.controller;
 
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
-import in.pervush.poker.model.tasks.TasksListItemView;
 import in.pervush.poker.model.tasks.TasksView;
 import in.pervush.poker.service.TasksService;
-import in.pervush.poker.service.UserService;
 import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +37,6 @@ import java.util.UUID;
 public class TasksController {
 
     private final TasksService tasksService;
-    private final UserService userService;
     private final RequestHelper requestHelper;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,8 +47,8 @@ public class TasksController {
                     @ApiResponse(responseCode = "401", content = @Content())
             }
     )
-    public Collection<TasksListItemView> getTasks() {
-        return tasksService.getTasks(requestHelper.getAuthenticatedUserUuid()).stream().map(TasksListItemView::of).toList();
+    public Collection<TasksView> getTasks() {
+        return tasksService.getTasks(requestHelper.getAuthenticatedUserUuid()).stream().map(TasksView::of).toList();
     }
 
     @Operation(
@@ -66,8 +63,7 @@ public class TasksController {
     public TasksView getTask(@PathVariable("taskUuid") final UUID taskUuid) {
         requestHelper.getAuthenticatedUserUuid();
         final var dbTask = tasksService.getTask(taskUuid);
-        final var dbUser = userService.getUser(dbTask.userUuid());
-        return TasksView.of(dbTask, dbUser);
+        return TasksView.of(dbTask);
     }
 
     @Operation(
@@ -81,10 +77,11 @@ public class TasksController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public TasksView createTask(@RequestBody @Valid final CreateTaskRequest request) {
-        return TasksView.of(
-                tasksService.createTask(requestHelper.getAuthenticatedUserUuid(), request.getName(), request.getUrl(),
-                        request.getScale()),
-                userService.getUser(requestHelper.getAuthenticatedUserUuid())
+        return TasksView.of(tasksService.createTask(
+                requestHelper.getAuthenticatedUserUuid(),
+                request.getName(),
+                request.getUrl(),
+                request.getScale())
         );
     }
 
