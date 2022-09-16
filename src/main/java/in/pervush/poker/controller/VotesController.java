@@ -70,10 +70,10 @@ public class VotesController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VotesStatView> getVotes(@PathVariable("taskUuid") final UUID taskUuid) {
-        requestHelper.getAuthenticatedUserUuid();
+        final var userUuid = requestHelper.getAuthenticatedUserUuid();
         for (final var service : services) {
             try {
-                return service.getVotesStat(taskUuid).entrySet().stream()
+                return service.getVotesStat(taskUuid, userUuid).entrySet().stream()
                         .sorted(Map.Entry.comparingByKey())
                         .map(v -> new VotesStatView(v.getKey(), v.getValue()))
                         .collect(Collectors.toList());

@@ -21,8 +21,8 @@ public class TasksRepository {
         return mapper.getNotDeletedTasks(userUuid);
     }
 
-    public DBTask getNotDeletedTask(UUID taskUuid) {
-        return mapper.getNotDeletedTask(taskUuid).orElseThrow(NotFoundException::new);
+    public DBTask getNotDeletedTask(UUID taskUuid, final UUID requestingUserUuid) {
+        return mapper.getNotDeletedTask(taskUuid, requestingUserUuid).orElseThrow(NotFoundException::new);
     }
 
     public DBTask getNotDeletedTaskLock(UUID taskUuid, UUID userUuid) {
@@ -46,7 +46,7 @@ public class TasksRepository {
     public DBTask createTask(UUID userUuid, UUID taskUuid, String name, String url, Scale scale) {
         final var now = InstantUtils.now();
         mapper.createTask(userUuid, taskUuid, name, url, scale, now);
-        return new DBTask(taskUuid, userUuid, name, url, scale, false, now, 0);
+        return new DBTask(taskUuid, userUuid, name, url, scale, false, now, 0, false);
     }
 
 }

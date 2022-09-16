@@ -28,8 +28,8 @@ public class TasksService {
         return tasksRepository.getNotDeletedTasks(userUuid);
     }
 
-    public DBTask getTask(final UUID taskUuid) {
-        return tasksRepository.getNotDeletedTask(taskUuid);
+    public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid) {
+        return tasksRepository.getNotDeletedTask(taskUuid, requestingUserUuid);
     }
 
     public DBTask createTask(final UUID userUuid, final String name, final String url, final Scale scale) {

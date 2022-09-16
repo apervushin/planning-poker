@@ -64,7 +64,8 @@ public class FibonacciVotesServiceTests {
     @Test
     void getVotesStat_invalidTaskStatus() {
         service.createVote(taskUuid, userUuid, VoteValue.VALUE_3);
-        final var ex = assertThrows(ErrorStatusException.class, () -> service.getVotesStat(taskUuid));
+        final var ex = assertThrows(ErrorStatusException.class,
+                () -> service.getVotesStat(taskUuid, userUuid));
         assertEquals(ErrorStatus.INVALID_TASK_STATUS, ex.getStatus());
     }
 
@@ -94,13 +95,13 @@ public class FibonacciVotesServiceTests {
                 VoteValue.VALUE_1, List.of(user2Name, user3Name),
                 VoteValue.VALUE_5, List.of(USER_NAME)
         );
-        assertEquals(expected, service.getVotesStat(taskUuid));
+        assertEquals(expected, service.getVotesStat(taskUuid, userUuid));
     }
 
     @Test
     void getVotesStat_notFoundException() {
         service.createVote(taskUuid, userUuid, VoteValue.VALUE_3);
         tasksService.deleteTask(taskUuid, userUuid);
-        assertThrows(NotFoundException.class, () -> service.getVotesStat(taskUuid));
+        assertThrows(NotFoundException.class, () -> service.getVotesStat(taskUuid, userUuid));
     }
 }

@@ -2,7 +2,7 @@ package in.pervush.poker.controller;
 
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
-import in.pervush.poker.model.tasks.TasksView;
+import in.pervush.poker.model.tasks.TaskView;
 import in.pervush.poker.service.TasksService;
 import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,8 +47,8 @@ public class TasksController {
                     @ApiResponse(responseCode = "401", content = @Content())
             }
     )
-    public Collection<TasksView> getTasks() {
-        return tasksService.getTasks(requestHelper.getAuthenticatedUserUuid()).stream().map(TasksView::of).toList();
+    public Collection<TaskView> getTasks() {
+        return tasksService.getTasks(requestHelper.getAuthenticatedUserUuid()).stream().map(TaskView::of).toList();
     }
 
     @Operation(
@@ -60,10 +60,10 @@ public class TasksController {
             }
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}")
-    public TasksView getTask(@PathVariable("taskUuid") final UUID taskUuid) {
-        requestHelper.getAuthenticatedUserUuid();
-        final var dbTask = tasksService.getTask(taskUuid);
-        return TasksView.of(dbTask);
+    public TaskView getTask(@PathVariable("taskUuid") final UUID taskUuid) {
+        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+        final var dbTask = tasksService.getTask(taskUuid, userUuid);
+        return TaskView.of(dbTask);
     }
 
     @Operation(
@@ -76,8 +76,8 @@ public class TasksController {
     )
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public TasksView createTask(@RequestBody @Valid final CreateTaskRequest request) {
-        return TasksView.of(tasksService.createTask(
+    public TaskView createTask(@RequestBody @Valid final CreateTaskRequest request) {
+        return TaskView.of(tasksService.createTask(
                 requestHelper.getAuthenticatedUserUuid(),
                 request.getName(),
                 request.getUrl(),

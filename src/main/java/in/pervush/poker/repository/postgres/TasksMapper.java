@@ -28,36 +28,70 @@ public interface TasksMapper {
             @Arg(column = "is_finished", javaType = boolean.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
             @Arg(column = "votes_cnt", javaType = int.class),
+            @Arg(column = "is_voted", javaType = boolean.class),
     })
     @Select("""
-            select t.*, coalesce(v.votes_cnt, 0) as votes_cnt
+            select
+                t.task_uuid,
+                max(t.user_uuid::varchar)::uuid as user_uuid,
+                max(t.name) as name,
+                max(t.url) as url,
+                max(t.scale) as scale,
+                max(t.create_dtm) as create_dtm,
+                max(t.is_deleted::int)::bool as is_deleted,
+                max(t.is_finished::int)::bool as is_finished,
+                max(case when t.user_uuid = v.user_uuid then 1 else 0 end)::bool as is_voted,
+                count(v.task_uuid) as votes_cnt
             from tasks t
-            left join ( "
-                select task_uuid, count(*) as votes_cnt
-                from votes
-                where user_uuid = #{userUuid}
-                group by task_uuid
-            ) v on t.task_uuid = v.task_uuid
+            left join votes v on t.task_uuid = v.task_uuid
             where not t.is_deleted
                 and t.user_uuid = #{userUuid}
-            order by t.create_dtm desc
+            group by t.task_uuid
+            order by create_dtm desc
             """)
     List<DBTask> getNotDeletedTasks(@Param("userUuid") UUID userUuid);
 
     @ResultMap("task")
     @Select("""
-            select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt
+            select
+                t.*,
+                coalesce(v.is_voted, false) as is_voted,
+                coalesce(v.votes_cnt, 0) as votes_cnt
             from tasks t
+            left join (
+                select
+                    task_uuid,
+                    max(case when #{requestingUserUuid} = user_uuid then 1 else 0 end)::bool as is_voted,
+                    count(*) as votes_cnt
+                from votes
+                where task_uuid = #{taskUuid}
+                group by task_uuid
+            ) v on t.task_uuid = v.task_uuid
             where not t.is_deleted and t.task_uuid = #{taskUuid}
             """)
-    Optional<DBTask> getNotDeletedTask(@Param("taskUuid") UUID taskUuid);
+    Optional<DBTask> getNotDeletedTask(@Param("taskUuid") UUID taskUuid,
+                                       @Param("requestingUserUuid") UUID requestingUserUuid);
 
     @ResultMap("task")
     @Select("""
-            select t.*, (select count(*) from votes where task_uuid = #{taskUuid}) as votes_cnt
+            select
+                t.*,
+                coalesce(v.is_voted, false) as is_voted,
+                coalesce(v.votes_cnt, 0) as votes_cnt
             from tasks t
-            where not t.is_deleted and t.task_uuid = #{taskUuid}
-            for update
+            left join (
+                select
+                    task_uuid,
+                    max(case when #{taskUuid} = user_uuid then 1 else 0 end)::bool as is_voted,
+                    count(*) as votes_cnt
+                from votes
+                where task_uuid = #{taskUuid}
+                group by task_uuid
+            ) v on t.task_uuid = v.task_uuid
+            where not t.is_deleted
+                and t.task_uuid = #{taskUuid}
+                and t.user_uuid = #{userUuid}
+            for update of t
             """)
     Optional<DBTask> getNotDeletedTaskLock(@Param("taskUuid") UUID taskUuid,
                                            @Param("userUuid") UUID userUuid);

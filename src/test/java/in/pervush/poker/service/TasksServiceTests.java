@@ -46,14 +46,14 @@ public class TasksServiceTests {
 
     @Test
     void getTask_notFoundException() {
-        assertThrows(NotFoundException.class, () -> tasksService.getTask(UUID.randomUUID()));
+        assertThrows(NotFoundException.class, () -> tasksService.getTask(UUID.randomUUID(), UUID.randomUUID()));
     }
 
     @Test
     void createAndGetTask_success() {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
-        final var actual = tasksService.getTask(expected.taskUuid());
+        final var actual = tasksService.getTask(expected.taskUuid(), expected.userUuid());
         assertEquals(expected, actual);
     }
 
@@ -96,7 +96,7 @@ public class TasksServiceTests {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.finishTask(expected.taskUuid(), expected.userUuid());
-        final var actual = tasksService.getTask(expected.taskUuid());
+        final var actual = tasksService.getTask(expected.taskUuid(), expected.userUuid());
         assertTrue(actual.finished());
     }
 
@@ -105,6 +105,6 @@ public class TasksServiceTests {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI);
         tasksService.deleteTask(expected.taskUuid(), expected.userUuid());
-        assertThrows(NotFoundException.class, () -> tasksService.getTask(expected.taskUuid()));
+        assertThrows(NotFoundException.class, () -> tasksService.getTask(expected.taskUuid(), expected.userUuid()));
     }
 }

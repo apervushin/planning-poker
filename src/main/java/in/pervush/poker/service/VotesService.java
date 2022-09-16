@@ -34,15 +34,15 @@ public abstract class VotesService {
         if (!isValidVote(voteValue)) {
             throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
         }
-        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid);
+        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, userUuid);
         validateTaskStatusActive(dbTask);
         validateTaskScale(dbTask, voteValue);
         usersRepository.getUser(userUuid);
         mapper.createVote(taskUuid, userUuid, voteValue, InstantUtils.now());
     }
 
-    public Map<VoteValue, List<String>> getVotesStat(final UUID taskUuid) {
-        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid);
+    public Map<VoteValue, List<String>> getVotesStat(final UUID taskUuid, final UUID userUuid) {
+        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, userUuid);
         if (dbTask.scale() != scale) {
             throw new NotFoundException();
         }
