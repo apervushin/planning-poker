@@ -10,6 +10,7 @@ public enum VoteValue {
     // Fibonacci
     VALUE_0(Scale.FIBONACCI),
     VALUE_1(Scale.FIBONACCI),
+    VALUE_2(Scale.FIBONACCI),
     VALUE_3(Scale.FIBONACCI),
     VALUE_5(Scale.FIBONACCI),
     VALUE_8(Scale.FIBONACCI),

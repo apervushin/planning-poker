@@ -1,0 +1,12 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="2209_01.xml">
+    <changeSet id="2022-07-09-add-scale-type-value" author="alex">
+        <sql>
+            ALTER TYPE task_vote ADD VALUE 'VALUE_2' AFTER 'VALUE_1'
+        </sql>
+    </changeSet>
+</databaseChangeLog>
