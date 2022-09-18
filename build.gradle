@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'in.pervush'
-version '1.2'
+version '1.3'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -24,14 +24,14 @@ sourceSets {
 }
 
 dependencies {
-    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.7.1')
-    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.7.1')
-    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.7.1')
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.7.3')
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.7.3')
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.7.3')
 
     implementation(group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9')
 
     implementation(group: 'org.springframework', name: 'spring-jdbc', version: '5.3.21')
-    implementation(group: 'org.postgresql', name: 'postgresql', version: '42.4.0')
+    implementation(group: 'org.postgresql', name: 'postgresql', version: '42.4.1')
     implementation(group: 'com.zaxxer', name: 'HikariCP', version: '5.0.1')
     implementation(group: 'org.mybatis', name: 'mybatis', version: '3.5.10')
     implementation(group: 'org.mybatis', name: 'mybatis-spring', version: '2.0.7')

@@ -2,6 +2,7 @@ package in.pervush.poker.repository.postgres;
 
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
+import in.pervush.poker.model.votes.VoteValue;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.Insert;
@@ -28,7 +29,7 @@ public interface TasksMapper {
             @Arg(column = "is_finished", javaType = boolean.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
             @Arg(column = "votes_cnt", javaType = int.class),
-            @Arg(column = "is_voted", javaType = boolean.class),
+            @Arg(column = "vote", javaType = VoteValue.class),
     })
     @Select("""
             select
@@ -40,7 +41,7 @@ public interface TasksMapper {
                 max(t.create_dtm) as create_dtm,
                 max(t.is_deleted::int)::bool as is_deleted,
                 max(t.is_finished::int)::bool as is_finished,
-                max(case when t.user_uuid = v.user_uuid then 1 else 0 end)::bool as is_voted,
+                max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote,
                 count(v.task_uuid) as votes_cnt
             from tasks t
             left join votes v on t.task_uuid = v.task_uuid
@@ -55,13 +56,13 @@ public interface TasksMapper {
     @Select("""
             select
                 t.*,
-                coalesce(v.is_voted, false) as is_voted,
+                v.vote,
                 coalesce(v.votes_cnt, 0) as votes_cnt
             from tasks t
             left join (
                 select
                     task_uuid,
-                    max(case when #{requestingUserUuid} = user_uuid then 1 else 0 end)::bool as is_voted,
+                    max(case when #{requestingUserUuid} = user_uuid then vote else null end) as vote,
                     count(*) as votes_cnt
                 from votes
                 where task_uuid = #{taskUuid}
@@ -76,13 +77,13 @@ public interface TasksMapper {
     @Select("""
             select
                 t.*,
-                coalesce(v.is_voted, false) as is_voted,
+                v.vote,
                 coalesce(v.votes_cnt, 0) as votes_cnt
             from tasks t
             left join (
                 select
                     task_uuid,
-                    max(case when #{taskUuid} = user_uuid then 1 else 0 end)::bool as is_voted,
+                    max(case when #{userUuid} = user_uuid then vote else null end) as vote,
                     count(*) as votes_cnt
                 from votes
                 where task_uuid = #{taskUuid}

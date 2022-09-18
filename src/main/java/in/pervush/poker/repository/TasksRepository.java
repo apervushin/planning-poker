@@ -46,7 +46,7 @@ public class TasksRepository {
     public DBTask createTask(UUID userUuid, UUID taskUuid, String name, String url, Scale scale) {
         final var now = InstantUtils.now();
         mapper.createTask(userUuid, taskUuid, name, url, scale, now);
-        return new DBTask(taskUuid, userUuid, name, url, scale, false, now, 0, false);
+        return new DBTask(taskUuid, userUuid, name, url, scale, false, now, 0, null);
     }
 
 }
