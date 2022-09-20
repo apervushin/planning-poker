@@ -12,12 +12,11 @@ public record TaskView(
         String url,
         @Schema(required = true) Scale scale,
         @Schema(required = true) boolean finished,
-        @Schema(required = true, deprecated = true) @Deprecated String userName,
         @Schema(description = "The requesting user' vote value") VoteValue voteValue,
         @Schema(required = true) int votesCount) {
 
     public static TaskView of(final DBTask dbTask) {
         return new TaskView(dbTask.taskUuid(), dbTask.userUuid(), dbTask.name(), dbTask.url(), dbTask.scale(),
-                dbTask.finished(), dbTask.userUuid().toString(), dbTask.voteValue(), dbTask.votesCount());
+                dbTask.finished(), dbTask.voteValue(), dbTask.votesCount());
     }
 }
