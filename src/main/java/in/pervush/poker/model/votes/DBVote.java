@@ -1,4 +1,6 @@
 package in.pervush.poker.model.votes;
 
-public record DBVote(String userName, VoteValue vote) {
+import java.util.UUID;
+
+public record DBVote(UUID userUuid, VoteValue vote) {
 }

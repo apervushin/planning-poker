@@ -25,15 +25,14 @@ public interface VotesMapper {
                     @Param("createDtm") Instant createDtm);
 
     @ConstructorArgs(value = {
-            @Arg(column = "user_name", javaType = String.class),
+            @Arg(column = "user_uuid", javaType = UUID.class),
             @Arg(column = "vote", javaType = VoteValue.class)
     })
     @Select("""
-            select u.name as user_name, v.vote
-            from votes v
-            inner join users u on u.user_uuid = v.user_uuid
-            where v.task_uuid = #{taskUuid}
-            order by vote, user_name
+            select user_uuid, vote
+            from votes
+            where task_uuid = #{taskUuid}
+            order by vote, user_uuid
             """)
     List<DBVote> getVotes(@Param("taskUuid") UUID taskUuid);
 }

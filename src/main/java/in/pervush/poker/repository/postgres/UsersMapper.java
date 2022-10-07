@@ -23,7 +23,7 @@ public interface UsersMapper {
                     @Param("name") String name,
                     @Param("createDtm") Instant createDtm);
 
-    @Results(id = "user")
+    @Results(id = "userUuid")
     @ConstructorArgs(value = {
             @Arg(column = "user_uuid", javaType = UUID.class),
             @Arg(column = "email", javaType = String.class),
@@ -34,7 +34,7 @@ public interface UsersMapper {
     @Select("select * from users where user_uuid = #{userUuid}")
     Optional<DBUser> getUser(@Param("userUuid") UUID userUuid);
 
-    @ResultMap("user")
+    @ResultMap("userUuid")
     @Select("select * from users where email = #{email}")
     Optional<DBUser> getUserByEmail(@Param("email") String email);
 }

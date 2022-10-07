@@ -6,6 +6,7 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.NotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.Scale;
+import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.UsersRepository;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -41,7 +42,8 @@ public class TasksServiceTests {
 
     @BeforeEach
     void initUser() {
-        userUuid = usersRepository.createUser("text@example.com", "abc", "Test user").userUuid();
+        userUuid = usersRepository.createUser("text@example.com", "abc", "Test userUuid")
+                .userUuid();
     }
 
     @Test

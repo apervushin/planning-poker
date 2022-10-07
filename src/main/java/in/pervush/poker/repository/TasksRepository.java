@@ -3,6 +3,7 @@ package in.pervush.poker.repository;
 import in.pervush.poker.exception.NotFoundException;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
+import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.postgres.TasksMapper;
 import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +44,11 @@ public class TasksRepository {
         }
     }
 
-    public DBTask createTask(UUID userUuid, UUID taskUuid, String name, String url, Scale scale) {
+    public DBTask createTask(final UUID userUuid, final UUID taskUuid, final String name, final String url,
+                             final Scale scale) {
         final var now = InstantUtils.now();
         mapper.createTask(userUuid, taskUuid, name, url, scale, now);
-        return new DBTask(taskUuid, userUuid, name, url, scale, false, now, 0, null);
+        return new DBTask(taskUuid, userUuid, name, url, scale, false, now, null);
     }
 
 }

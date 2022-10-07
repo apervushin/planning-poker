@@ -4,22 +4,22 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import in.pervush.poker.configuration.AuthenticationProperties;
 import in.pervush.poker.exception.TokenNotExistsException;
+import in.pervush.poker.model.user.DBUser;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Repository;
 
 import java.security.SecureRandom;
-import java.util.UUID;
 
 @Repository
 public class AuthenticationRepository {
 
-    private final Cache<String, UUID> tokensCache;
+    private final Cache<String, DBUser> tokensCache;
 
     public AuthenticationRepository(final AuthenticationProperties properties) {
         tokensCache = CacheBuilder.newBuilder().expireAfterAccess(properties.getCookie().getTtl()).build();
     }
 
-    public UUID getUserUuid(final String token) {
+    public DBUser getUserUuid(final String token) {
         final var userUuid = tokensCache.getIfPresent(token);
         if (userUuid == null) {
             throw new TokenNotExistsException();
@@ -27,9 +27,9 @@ public class AuthenticationRepository {
         return userUuid;
     }
 
-    public String createToken(final UUID userUuid) {
+    public String createToken(final DBUser user) {
         final var token = generateToken();
-        tokensCache.put(token, userUuid);
+        tokensCache.put(token, user);
         return token;
     }
 

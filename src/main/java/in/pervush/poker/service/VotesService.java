@@ -14,9 +14,7 @@ import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public abstract class VotesService {
@@ -41,16 +39,15 @@ public abstract class VotesService {
         mapper.createVote(taskUuid, userUuid, voteValue, InstantUtils.now());
     }
 
-    public Map<VoteValue, List<String>> getVotesStat(final UUID taskUuid, final UUID userUuid) {
-        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, userUuid);
+    public List<DBVote> getVotes(final UUID taskUuid, final UUID requestingUserUuid) {
+        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, requestingUserUuid);
         if (dbTask.scale() != scale) {
             throw new NotFoundException();
         }
         if (!dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
-        return mapper.getVotes(taskUuid).stream()
-                .collect(Collectors.groupingBy(DBVote::vote, Collectors.mapping(DBVote::userName, Collectors.toList())));
+        return mapper.getVotes(taskUuid);
     }
 
     private static void validateTaskStatusActive(final DBTask dbTask) {
