@@ -20,18 +20,17 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringJUnitConfig({FibonacciVotesService.class, UsersRepository.class, TasksRepository.class, TasksService.class})
+@SpringJUnitConfig({VotesService.class, UsersRepository.class, TasksRepository.class, TasksService.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
 @Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
 @Transactional
-public class FibonacciVotesServiceTests {
+public class VotesServiceTests {
 
     private static final String USER_EMAIL = "test@example.com";
     private static final String USER_PASSWORD = "abc";
@@ -40,7 +39,7 @@ public class FibonacciVotesServiceTests {
     private UUID userUuid;
 
     @Autowired
-    private FibonacciVotesService service;
+    private VotesService service;
 
     @Autowired
     private UsersRepository usersRepository;
