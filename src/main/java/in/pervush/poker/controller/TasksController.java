@@ -119,7 +119,7 @@ public class TasksController {
                     @ApiResponse(responseCode = "404", content = @Content())
             }
     )
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}/finish")
+    @PostMapping(value = "/{taskUuid}/finish")
     @ResponseStatus(HttpStatus.CREATED)
     public void finishTask(@PathVariable("taskUuid") final UUID taskUuid) {
         tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid());
