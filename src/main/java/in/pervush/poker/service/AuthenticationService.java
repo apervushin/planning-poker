@@ -14,6 +14,6 @@ public class AuthenticationService {
 
     public String login(final String email, final String password) {
         final var user = usersRepository.getUser(email, password);
-        return authenticationRepository.createToken(user.userUuid());
+        return authenticationRepository.createToken(user);
     }
 }

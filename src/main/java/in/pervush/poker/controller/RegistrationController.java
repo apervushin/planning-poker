@@ -48,7 +48,7 @@ public class RegistrationController {
     public void register(@RequestBody @Valid final RegisterRequest request) {
         try {
             final var dbUser = userService.createUser(request.email(), request.password(), request.name());
-            final var token = authenticationRepository.createToken(dbUser.userUuid());
+            final var token = authenticationRepository.createToken(dbUser);
             requestHelper.setAuthCookie(token);
         } catch (EmailExistsException ex) {
             throw new ErrorStatusException(ErrorStatus.USER_EMAIL_EXISTS);

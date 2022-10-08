@@ -4,6 +4,8 @@ import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
 import in.pervush.poker.model.tasks.TaskView;
 import in.pervush.poker.service.TasksService;
+import in.pervush.poker.service.UserService;
+import in.pervush.poker.service.VotesService;
 import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/v1/tasks")
@@ -37,6 +41,8 @@ import java.util.UUID;
 public class TasksController {
 
     private final TasksService tasksService;
+    private final VotesService votesService;
+    private final UserService userService;
     private final RequestHelper requestHelper;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -48,7 +54,18 @@ public class TasksController {
             }
     )
     public Collection<TaskView> getTasks() {
-        return tasksService.getTasks(requestHelper.getAuthenticatedUserUuid()).stream().map(TaskView::of).toList();
+        final var user = requestHelper.getAuthenticatedUser();
+
+        return tasksService.getTasks(user.userUuid()).stream()
+                .map(v -> {
+                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid());
+
+                    return TaskView.of(
+                            v,
+                            user,
+                            votes.stream().map(userService::getUser).collect(Collectors.toList())
+                    );
+                }).toList();
     }
 
     @Operation(
@@ -63,7 +80,10 @@ public class TasksController {
     public TaskView getTask(@PathVariable("taskUuid") final UUID taskUuid) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
         final var dbTask = tasksService.getTask(taskUuid, userUuid);
-        return TaskView.of(dbTask);
+        final var taskUser = userService.getUser(dbTask.userUuid());
+        final var userUuids = votesService.getVotedUserUuids(taskUuid, userUuid);
+        return TaskView.of(dbTask, taskUser,
+                userUuids.stream().map(userService::getUser).collect(Collectors.toList()));
     }
 
     @Operation(
@@ -77,11 +97,16 @@ public class TasksController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public TaskView createTask(@RequestBody @Valid final CreateTaskRequest request) {
-        return TaskView.of(tasksService.createTask(
-                requestHelper.getAuthenticatedUserUuid(),
-                request.getName(),
-                request.getUrl(),
-                request.getScale())
+        final var user = requestHelper.getAuthenticatedUser();
+        return TaskView.of(
+                tasksService.createTask(
+                        user.userUuid(),
+                        request.getName(),
+                        request.getUrl(),
+                        request.getScale()
+                ),
+                user,
+                Collections.emptyList()
         );
     }
 
@@ -94,7 +119,7 @@ public class TasksController {
                     @ApiResponse(responseCode = "404", content = @Content())
             }
     )
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}/finish")
+    @PostMapping(value = "/{taskUuid}/finish")
     @ResponseStatus(HttpStatus.CREATED)
     public void finishTask(@PathVariable("taskUuid") final UUID taskUuid) {
         tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid());

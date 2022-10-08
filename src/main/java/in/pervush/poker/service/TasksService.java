@@ -4,6 +4,7 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
+import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;

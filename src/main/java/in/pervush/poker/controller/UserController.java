@@ -2,7 +2,7 @@ package in.pervush.poker.controller;
 
 import in.pervush.poker.exception.UnauthorizedException;
 import in.pervush.poker.exception.UserNotFoundException;
-import in.pervush.poker.model.user.UserView;
+import in.pervush.poker.model.user.UserPrivateView;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,11 +36,11 @@ public class UserController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @SecurityRequirement(name = "Authorization")
-    public UserView getUser() {
+    public UserPrivateView getUser() {
         try {
             final var userUuid = requestHelper.getAuthenticatedUserUuid();
             final var dbUser = userService.getUser(userUuid);
-            return UserView.of(dbUser);
+            return UserPrivateView.of(dbUser);
         } catch (UserNotFoundException ex) {
             throw new UnauthorizedException();
         }

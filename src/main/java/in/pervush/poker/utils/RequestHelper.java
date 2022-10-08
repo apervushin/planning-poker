@@ -3,6 +3,7 @@ package in.pervush.poker.utils;
 import in.pervush.poker.configuration.AuthenticationProperties;
 import in.pervush.poker.exception.TokenNotExistsException;
 import in.pervush.poker.exception.UnauthorizedException;
+import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.AuthenticationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,10 @@ public class RequestHelper {
     private final HttpServletResponse response;
 
     public UUID getAuthenticatedUserUuid() {
+        return getAuthenticatedUser().userUuid();
+    }
+
+    public DBUser getAuthenticatedUser() {
         final var cookie = WebUtils.getCookie(request, SESSION_COOKIE_NAME);
         if (cookie == null) {
             throw new UnauthorizedException();

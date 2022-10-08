@@ -1,12 +1,11 @@
 package in.pervush.poker.controller;
 
-import in.pervush.poker.exception.ErrorStatusException;
-import in.pervush.poker.exception.NotFoundException;
 import in.pervush.poker.model.ErrorResponse;
-import in.pervush.poker.model.ErrorStatus;
+import in.pervush.poker.model.user.DBUser;
+import in.pervush.poker.model.user.UserPublicView;
 import in.pervush.poker.model.votes.CreateVoteRequest;
-import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.model.votes.VotesStatView;
+import in.pervush.poker.service.UserService;
 import in.pervush.poker.service.VotesService;
 import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -41,8 +41,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VotesController {
 
-    private final List<VotesService> services;
+    private final VotesService votesService;
     private final RequestHelper requestHelper;
+    private final UserService userService;
 
     @Operation(
             summary = "Vote",
@@ -57,7 +58,7 @@ public class VotesController {
     public void createVote(@PathVariable("taskUuid") final UUID taskUuid,
                            @RequestBody @Valid CreateVoteRequest request) {
         final var vote = request.getValue();
-        getService(vote).createVote(taskUuid, requestHelper.getAuthenticatedUserUuid(), vote);
+        votesService.createVote(taskUuid, requestHelper.getAuthenticatedUserUuid(), vote);
     }
 
     @Operation(
@@ -71,24 +72,20 @@ public class VotesController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VotesStatView> getVotes(@PathVariable("taskUuid") final UUID taskUuid) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        for (final var service : services) {
-            try {
-                return service.getVotesStat(taskUuid, userUuid).entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey())
-                        .map(v -> new VotesStatView(v.getKey(), v.getValue()))
-                        .collect(Collectors.toList());
-            } catch (NotFoundException ignored) {}
-        }
-        throw new NotFoundException();
-    }
-
-    private VotesService getService(VoteValue vote) {
-        for (final var service : services) {
-            if (service.isValidVote(vote)) {
-                return service;
-            }
-        }
-        throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
+        return votesService.getVotes(taskUuid, userUuid).stream()
+                .map(v -> Pair.of(v, userService.getUser(v.userUuid())))
+                .collect(Collectors.groupingBy(
+                        a -> a.getLeft().vote(),
+                        Collectors.mapping(Pair::getRight, Collectors.toList()))
+                )
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(v -> new VotesStatView(
+                        v.getKey(),
+                        v.getValue().stream().map(DBUser::name).collect(Collectors.toList()),
+                        v.getValue().stream().map(UserPublicView::of).collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
 
 }

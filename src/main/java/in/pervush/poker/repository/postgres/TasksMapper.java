@@ -28,7 +28,6 @@ public interface TasksMapper {
             @Arg(column = "scale", javaType = Scale.class),
             @Arg(column = "is_finished", javaType = boolean.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
-            @Arg(column = "votes_cnt", javaType = int.class),
             @Arg(column = "vote", javaType = VoteValue.class),
     })
     @Select("""
@@ -41,8 +40,7 @@ public interface TasksMapper {
                 max(t.create_dtm) as create_dtm,
                 max(t.is_deleted::int)::bool as is_deleted,
                 max(t.is_finished::int)::bool as is_finished,
-                max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote,
-                count(v.task_uuid) as votes_cnt
+                max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote
             from tasks t
             left join votes v on t.task_uuid = v.task_uuid
             where not t.is_deleted
@@ -56,8 +54,7 @@ public interface TasksMapper {
     @Select("""
             select
                 t.*,
-                v.vote,
-                coalesce(v.votes_cnt, 0) as votes_cnt
+                v.vote
             from tasks t
             left join (
                 select
@@ -77,8 +74,7 @@ public interface TasksMapper {
     @Select("""
             select
                 t.*,
-                v.vote,
-                coalesce(v.votes_cnt, 0) as votes_cnt
+                v.vote
             from tasks t
             left join (
                 select
