@@ -2,7 +2,6 @@ package in.pervush.poker.model.tasks;
 
 import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.model.user.UserPublicView;
-import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -23,10 +22,10 @@ public record TaskView(
         List<UserPublicView> votedUsers
 ) {
 
-    public static TaskView of(final DBTask dbTask, final List<DBVote> votes, final DBUser dbUser,
+    public static TaskView of(final DBTask dbTask, final DBUser dbUser,
                               final List<DBUser> votedUsers) {
         return new TaskView(dbTask.taskUuid(), dbTask.userUuid(), UserPublicView.of(dbUser),
                 dbTask.name(), dbTask.url(), dbTask.scale(), dbTask.finished(), dbTask.voteValue(),
-                votes.size(), votedUsers.stream().map(UserPublicView::of).collect(Collectors.toList()));
+                votedUsers.size(), votedUsers.stream().map(UserPublicView::of).collect(Collectors.toList()));
     }
 }

@@ -58,13 +58,12 @@ public class TasksController {
 
         return tasksService.getTasks(user.userUuid()).stream()
                 .map(v -> {
-                    final var votes = votesService.getVotes(v.taskUuid(), user.userUuid());
+                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid());
 
                     return TaskView.of(
                             v,
-                            votes,
                             user,
-                            votes.stream().map(a -> userService.getUser(a.userUuid())).collect(Collectors.toList())
+                            votes.stream().map(userService::getUser).collect(Collectors.toList())
                     );
                 }).toList();
     }
@@ -82,9 +81,9 @@ public class TasksController {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
         final var dbTask = tasksService.getTask(taskUuid, userUuid);
         final var taskUser = userService.getUser(dbTask.userUuid());
-        final var votes = votesService.getVotes(taskUuid, userUuid);
-        return TaskView.of(dbTask, votes, taskUser,
-                votes.stream().map(a -> userService.getUser(a.userUuid())).collect(Collectors.toList()));
+        final var userUuids = votesService.getVotedUserUuids(taskUuid, userUuid);
+        return TaskView.of(dbTask, taskUser,
+                userUuids.stream().map(userService::getUser).collect(Collectors.toList()));
     }
 
     @Operation(
@@ -106,7 +105,6 @@ public class TasksController {
                         request.getUrl(),
                         request.getScale()
                 ),
-                Collections.emptyList(),
                 user,
                 Collections.emptyList()
         );

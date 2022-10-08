@@ -93,8 +93,8 @@ public class VotesServiceTests {
 
         // validate
         final var expected = List.of(
-                new DBVote(user2Uuid, VoteValue.VALUE_1),
                 new DBVote(user3Uuid, VoteValue.VALUE_1),
+                new DBVote(user2Uuid, VoteValue.VALUE_1),
                 new DBVote(userUuid, VoteValue.VALUE_5)
         );
         assertEquals(expected, service.getVotes(taskUuid, userUuid));

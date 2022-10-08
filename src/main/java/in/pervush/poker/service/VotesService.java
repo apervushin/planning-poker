@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,11 @@ public class VotesService {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
         return mapper.getVotes(taskUuid);
+    }
+
+    public List<UUID> getVotedUserUuids(final UUID taskUuid, final UUID requestingUserUuid) {
+        tasksRepository.getNotDeletedTask(taskUuid, requestingUserUuid);
+        return mapper.getVotes(taskUuid).stream().map(DBVote::userUuid).collect(Collectors.toList());
     }
 
     private static void validateTaskStatusActive(final DBTask dbTask) {
