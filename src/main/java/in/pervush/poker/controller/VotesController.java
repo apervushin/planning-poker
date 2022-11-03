@@ -82,7 +82,6 @@ public class VotesController {
                 .sorted(Map.Entry.comparingByKey())
                 .map(v -> new VotesStatView(
                         v.getKey(),
-                        v.getValue().stream().map(DBUser::name).collect(Collectors.toList()),
                         v.getValue().stream().map(UserPublicView::of).collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
