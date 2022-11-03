@@ -1,7 +1,6 @@
 package in.pervush.poker.controller;
 
 import in.pervush.poker.model.ErrorResponse;
-import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.model.user.UserPublicView;
 import in.pervush.poker.model.votes.CreateVoteRequest;
 import in.pervush.poker.model.votes.VotesStatView;
@@ -82,7 +81,6 @@ public class VotesController {
                 .sorted(Map.Entry.comparingByKey())
                 .map(v -> new VotesStatView(
                         v.getKey(),
-                        v.getValue().stream().map(DBUser::name).collect(Collectors.toList()),
                         v.getValue().stream().map(UserPublicView::of).collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
