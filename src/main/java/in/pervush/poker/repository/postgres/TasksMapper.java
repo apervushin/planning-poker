@@ -29,6 +29,7 @@ public interface TasksMapper {
             @Arg(column = "is_finished", javaType = boolean.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
             @Arg(column = "vote", javaType = VoteValue.class),
+            @Arg(column = "team_uuid", javaType = UUID.class),
     })
     @Select("""
             select
@@ -40,15 +41,16 @@ public interface TasksMapper {
                 max(t.create_dtm) as create_dtm,
                 max(t.is_deleted::int)::bool as is_deleted,
                 max(t.is_finished::int)::bool as is_finished,
-                max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote
+                max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote,
+                max(t.team_uuid::varchar)::uuid as team_uuid
             from tasks t
             left join votes v on t.task_uuid = v.task_uuid
             where not t.is_deleted
-                and t.user_uuid = #{userUuid}
+                and t.team_uuid = #{teamUuid}
             group by t.task_uuid
             order by create_dtm desc
             """)
-    List<DBTask> getNotDeletedTasks(@Param("userUuid") UUID userUuid);
+    List<DBTask> getNotDeletedTasks(@Param("teamUuid") UUID teamUuid);
 
     @ResultMap("task")
     @Select("""
@@ -65,9 +67,10 @@ public interface TasksMapper {
                 where task_uuid = #{taskUuid}
                 group by task_uuid
             ) v on t.task_uuid = v.task_uuid
-            where not t.is_deleted and t.task_uuid = #{taskUuid}
+            where not t.is_deleted and t.task_uuid = #{taskUuid} and t.team_uuid = #{teamUuid}
             """)
     Optional<DBTask> getNotDeletedTask(@Param("taskUuid") UUID taskUuid,
+                                       @Param("teamUuid") UUID teamUuid,
                                        @Param("requestingUserUuid") UUID requestingUserUuid);
 
     @ResultMap("task")
@@ -79,7 +82,7 @@ public interface TasksMapper {
             left join (
                 select
                     task_uuid,
-                    max(case when #{userUuid} = user_uuid then vote else null end) as vote,
+                    max(case when #{user} = user_uuid then vote else null end) as vote,
                     count(*) as votes_cnt
                 from votes
                 where task_uuid = #{taskUuid}
@@ -87,36 +90,38 @@ public interface TasksMapper {
             ) v on t.task_uuid = v.task_uuid
             where not t.is_deleted
                 and t.task_uuid = #{taskUuid}
-                and t.user_uuid = #{userUuid}
+                and t.team_uuid = #{teamUuid}
             for update of t
             """)
     Optional<DBTask> getNotDeletedTaskLock(@Param("taskUuid") UUID taskUuid,
-                                           @Param("userUuid") UUID userUuid);
+                                           @Param("teamUuid") UUID teamUuid,
+                                           @Param("user") UUID userUuid);
 
     @Update("""
             update tasks
             set is_finished = true
-            where not is_deleted and task_uuid = #{taskUuid} and user_uuid = #{userUuid}
+            where not is_deleted and team_uuid = #{teamUuid} and task_uuid = #{taskUuid}
             """)
     boolean setFinished(@Param("taskUuid") UUID taskUuid,
-                        @Param("userUuid") UUID userUuid);
+                        @Param("teamUuid") UUID teamUuid);
 
     @Update("""
             update tasks
             set is_deleted = true
-            where not is_deleted and task_uuid = #{taskUuid} and user_uuid = #{userUuid}
+            where not is_deleted and team_uuid = #{teamUuid} and task_uuid = #{taskUuid}
             """)
     boolean setDeleted(@Param("taskUuid") UUID taskUuid,
-                       @Param("userUuid") UUID userUuid);
+                       @Param("teamUuid") UUID teamUuid);
 
     @Insert("""
-            insert into tasks(user_uuid, task_uuid, name, url, scale, create_dtm)
-            values(#{userUuid}, #{taskUuid}, #{name}, #{url}, cast(#{scale} as task_scale), #{createDtm})
+            insert into tasks(user_uuid, task_uuid, name, url, scale, create_dtm, team_uuid)
+            values(#{user}, #{taskUuid}, #{name}, #{url}, cast(#{scale} as task_scale), #{createDtm}, #{teamUuid})
             """)
-    void createTask(@Param("userUuid") UUID userUuid,
+    void createTask(@Param("user") UUID userUuid,
                     @Param("taskUuid") UUID taskUuid,
                     @Param("name") String name,
                     @Param("url") String url,
                     @Param("scale") Scale scale,
-                    @Param("createDtm") Instant createDtm);
+                    @Param("createDtm") Instant createDtm,
+                    @Param("teamUuid") UUID teamUuid);
 }

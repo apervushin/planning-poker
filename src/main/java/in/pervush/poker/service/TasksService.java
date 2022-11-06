@@ -1,10 +1,11 @@
 package in.pervush.poker.service;
 
 import in.pervush.poker.exception.ErrorStatusException;
+import in.pervush.poker.exception.TaskNotFoundException;
+import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
-import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -24,33 +25,40 @@ public class TasksService {
     private static final UrlValidator URL_VALIDATOR = new UrlValidator(new String[] {"http", "https"});
 
     private final TasksRepository tasksRepository;
+    private final TeamsService teamsService;
 
-    public List<DBTask> getTasks(final UUID userUuid) {
-        return tasksRepository.getNotDeletedTasks(userUuid);
+    public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid) throws TeamNotFoundException {
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        return tasksRepository.getNotDeletedTasks(teamUuid);
     }
 
-    public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid) {
-        return tasksRepository.getNotDeletedTask(taskUuid, requestingUserUuid);
+    public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid)
+            throws TaskNotFoundException {
+        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        return tasksRepository.getNotDeletedTask(taskUuid, teamUuid, requestingUserUuid);
     }
 
-    public DBTask createTask(final UUID userUuid, final String name, final String url, final Scale scale) {
+    public DBTask createTask(final UUID userUuid, final String name, final String url, final Scale scale,
+                             final UUID teamUuid) {
         validateTaskName(name);
         validateTaskUrl(url);
-        final var taskUuid = UUID.randomUUID();
-        return tasksRepository.createTask(userUuid, taskUuid, name, url, scale);
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        return tasksRepository.createTask(userUuid, name, url, scale, teamUuid);
     }
 
     @Transactional
-    public void finishTask(final UUID taskUuid, final UUID userUuid) {
-        final var dbTask = tasksRepository.getNotDeletedTaskLock(taskUuid, userUuid);
+    public void finishTask(final UUID taskUuid, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        final var dbTask = tasksRepository.getNotDeletedTaskLock(taskUuid, teamUuid, userUuid);
         if (dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
-        tasksRepository.finishTask(taskUuid, userUuid);
+        tasksRepository.finishTask(taskUuid, teamUuid);
     }
 
-    public void deleteTask(final UUID taskUuid, final UUID userUuid) {
-        tasksRepository.deleteTask(taskUuid, userUuid);
+    public void deleteTask(final UUID taskUuid, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        tasksRepository.deleteTask(taskUuid, teamUuid);
     }
 
     private static void validateTaskName(final String name) {

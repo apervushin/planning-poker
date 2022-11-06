@@ -6,5 +6,5 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record DBTask(UUID taskUuid, UUID userUuid, String name, String url, Scale scale, boolean finished,
-                     Instant createDtm, VoteValue voteValue) {
+                     Instant createDtm, VoteValue voteValue, UUID teamUuid) {
 }

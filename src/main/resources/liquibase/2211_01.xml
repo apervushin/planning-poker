@@ -1,0 +1,79 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="2211_01.xml">
+    <changeSet id="2022-07-09-add-scale-type-value" author="alex">
+        <createTable tableName="teams">
+            <column name="team_uuid" type="uuid">
+                    <constraints primaryKey="true" />
+            </column>
+            <column name="name" type="varchar2">
+                <constraints nullable="false" />
+            </column>
+            <column name="create_dtm" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <sql>
+            create type team_membership_status as enum('OWNER', 'MEMBER', 'INVITED');
+        </sql>
+        <createTable tableName="users_x_teams">
+            <column name="user_uuid" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="team_uuid" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="membership_status" type="team_membership_status">
+                <constraints nullable="false" />
+            </column>
+            <column name="create_dtm" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <sql>
+            create index users_x_teams_user_uuid_membership_status_i on users_x_teams(user_uuid, membership_status)
+            where membership_status = 'OWNER'
+        </sql>
+        <createIndex tableName="users_x_teams" indexName="users_x_teams_team_uuid_i">
+            <column name="team_uuid" />
+        </createIndex>
+        <sql>
+            insert into teams(team_uuid, name, create_dtm)
+            select
+                u.user_uuid,
+                u.name || '''s team',
+                now()
+            from users u
+            where u.user_uuid in (select user_uuid from tasks)
+        </sql>
+        <sql>
+            insert into users_x_teams(user_uuid, team_uuid, membership_status, create_dtm)
+            select
+                u.user_uuid,
+                u.user_uuid,
+                cast('OWNER' as team_membership_status),
+                now()
+            from users u
+            where u.user_uuid in (select user_uuid from tasks)
+        </sql>
+        <addColumn tableName="tasks">
+            <column name="team_uuid" type="uuid" />
+        </addColumn>
+        <update tableName="tasks">
+            <column name="team_uuid" valueComputed="user_uuid" />
+        </update>
+        <addNotNullConstraint tableName="tasks" columnName="team_uuid" />
+        <addForeignKeyConstraint baseTableName="teams" baseColumnNames="team_uuid" constraintName="tasks_team_uuid_fk"
+                                 referencedTableName="teams" referencedColumnNames="team_uuid" />
+    </changeSet>
+    <changeSet id="2022-11-04-is_deleted-team-column" author="alex">
+        <addColumn tableName="teams">
+            <column name="is_deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

@@ -1,8 +1,11 @@
 package in.pervush.poker.controller;
 
 import in.pervush.poker.exception.ErrorStatusException;
-import in.pervush.poker.exception.NotFoundException;
+import in.pervush.poker.exception.ForbiddenException;
+import in.pervush.poker.exception.MembershipNotFoundException;
+import in.pervush.poker.exception.TaskNotFoundException;
 import in.pervush.poker.exception.UnauthorizedException;
+import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +25,24 @@ public class ExceptionController {
         return new ResponseEntity<>(new ErrorResponse(ex.getStatus()), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Void> handleNotFoundException() {
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<Void> handleTaskNotFoundException() {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Void> handleUserNotFoundException() {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MembershipNotFoundException.class)
+    public ResponseEntity<Void> handleMembershipNotFoundException() {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Void> handleForbiddenException() {
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
 }
