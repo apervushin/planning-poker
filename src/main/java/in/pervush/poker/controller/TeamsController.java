@@ -73,7 +73,7 @@ public class TeamsController {
     }
 
     @Operation(
-            summary = "Create team",
+            summary = "Delete team",
             responses = {
                     @ApiResponse(responseCode = "204"),
                     @ApiResponse(responseCode = "401", content = @Content()),
@@ -87,4 +87,18 @@ public class TeamsController {
         teamsService.deleteTeam(teamUuid, userUuid);
     }
 
+    @Operation(
+            summary = "Leave team",
+            responses = {
+                    @ApiResponse(responseCode = "201"),
+                    @ApiResponse(responseCode = "401", content = @Content()),
+                    @ApiResponse(responseCode = "403", content = @Content(), description = "Team not exists or you are not owner of the team")
+            }
+    )
+    @DeleteMapping(value = "/{teamUuid}/leave")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leaveTeam(@PathVariable final UUID teamUuid) {
+        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+        teamsService.deleteTeamMember(teamUuid, userUuid, userUuid);
+    }
 }

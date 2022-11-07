@@ -175,11 +175,23 @@ public class TeamsServiceTests {
     @Test
     void deleteTeamMember_userIsNotTeamOwner_forbiddenException() {
         final var team = service.createTeam(user.userUuid(), "Test team 1");
+        final var user2 = usersRepository.createUser("test1@example.com", "abc", "Test user");
+        service.inviteTeamMember(team.teamUuid(), user.userUuid(), user2.email());
+        final var user3 = usersRepository.createUser("test2@example.com", "abc", "Test user");
+        service.inviteTeamMember(team.teamUuid(), user.userUuid(), user3.email());
+
+        assertThrows(ForbiddenException.class,
+                () -> service.deleteTeamMember(team.teamUuid(), user2.userUuid(), user3.userUuid()));
+    }
+
+    @Test
+    void deleteTeamMember_leaveTeam_success() {
+        final var team = service.createTeam(user.userUuid(), "Test team 1");
         final var user2 = usersRepository.createUser("text1@example.com", "abc", "Test user");
         service.inviteTeamMember(team.teamUuid(), user.userUuid(), user2.email());
 
-        assertThrows(ForbiddenException.class,
-                () -> service.deleteTeamMember(team.teamUuid(), user2.userUuid(), user2.userUuid()));
+        service.deleteTeamMember(team.teamUuid(), user2.userUuid(), user2.userUuid());
+        assertThrows(TeamNotFoundException.class, () -> repository.getTeam(team.teamUuid(), user2.userUuid()));
     }
 
     @Test

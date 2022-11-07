@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -58,9 +59,9 @@ public class TeamsService {
         teamsRepository.setMembershipStatus(teamUuid, userUuid, MembershipStatus.MEMBER, MembershipStatus.INVITED);
     }
 
-    public void deleteTeamMember(final UUID teamUuid, final UUID teamOwnerUserUuid, final UUID deletingUserUuid)
+    public void deleteTeamMember(final UUID teamUuid, final UUID userUuid, final UUID deletingUserUuid)
             throws ForbiddenException, MembershipNotFoundException {
-        validateTeamOwner(teamUuid, teamOwnerUserUuid);
+        validateTeamOwnerOrUserUuidsEquals(teamUuid, userUuid, deletingUserUuid);
         teamsRepository.deleteTeamMember(teamUuid, deletingUserUuid);
     }
 
@@ -71,7 +72,15 @@ public class TeamsService {
         }
     }
 
-    private void validateTeamOwner(final UUID teamUuid, final UUID teamOwnerUserUuid) throws ForbiddenException {
+    private void validateTeamOwnerOrUserUuidsEquals(final UUID teamUuid, final UUID userUuid,
+                                                    final UUID deletingUserUuid) {
+        if (!Objects.equals(userUuid, deletingUserUuid)) {
+            validateTeamOwner(teamUuid, userUuid);
+        }
+    }
+
+    private void validateTeamOwner(final UUID teamUuid, final UUID teamOwnerUserUuid)
+            throws ForbiddenException {
         try {
             if(teamsRepository.getTeam(teamUuid, teamOwnerUserUuid).membershipStatus() != MembershipStatus.OWNER) {
                 throw new ForbiddenException();
