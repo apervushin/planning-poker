@@ -96,7 +96,7 @@ public class TeamsController {
             }
     )
     @PostMapping(value = "/{teamUuid}/leave")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.CREATED)
     public void leaveTeam(@PathVariable final UUID teamUuid) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
         teamsService.deleteTeamMember(teamUuid, userUuid, userUuid);
