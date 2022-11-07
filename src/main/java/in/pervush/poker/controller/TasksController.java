@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,10 +55,11 @@ public class TasksController {
                     @ApiResponse(responseCode = "404", content = @Content(), description = "Team not found or you are not team member")
             }
     )
-    public Collection<TaskView> getTasks(@PathVariable("teamUuid") final UUID teamUuid) {
+    public Collection<TaskView> getTasks(@PathVariable("teamUuid") final UUID teamUuid,
+                                         @RequestParam(name = "search", required = false) String search) {
         final var user = requestHelper.getAuthenticatedUser();
 
-        return tasksService.getTasks(user.userUuid(), teamUuid).stream()
+        return tasksService.getTasks(user.userUuid(), teamUuid, search).stream()
                 .map(v -> {
                     final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), teamUuid);
 

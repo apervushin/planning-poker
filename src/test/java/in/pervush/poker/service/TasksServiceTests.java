@@ -6,6 +6,7 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
 import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
+import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
@@ -20,8 +21,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -127,5 +130,27 @@ public class TasksServiceTests {
         tasksService.deleteTask(expected.taskUuid(), expected.userUuid(), teamUuid);
         assertThrows(TaskNotFoundException.class,
                 () -> tasksService.getTask(expected.taskUuid(), expected.userUuid(), teamUuid));
+    }
+
+    @Test
+    void getTasks_withFilterByUrl_success() {
+        tasksService.createTask(userUuid, "Test task",
+                "http://ooglE.com", Scale.FIBONACCI, teamUuid);
+        final var expected = tasksService.createTask(userUuid, "Test task",
+                "http://yahoO.com", Scale.FIBONACCI, teamUuid);
+
+        final var actual = tasksService.getTasks(userUuid, teamUuid, "Yahoo");
+        assertThat(actual).containsExactly(expected);
+    }
+
+    @Test
+    void getTasks_withFilterByName_success() {
+        final var expected = tasksService.createTask(userUuid, "Yahoo task",
+                "http://example.com", Scale.FIBONACCI, teamUuid);
+        tasksService.createTask(userUuid, "Google task",
+                "http://example.com", Scale.FIBONACCI, teamUuid);
+
+        final var actual = tasksService.getTasks(userUuid, teamUuid, "yahoO");
+        assertThat(actual).containsExactly(expected);
     }
 }
