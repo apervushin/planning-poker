@@ -6,7 +6,6 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
 import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
-import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
@@ -21,7 +20,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
