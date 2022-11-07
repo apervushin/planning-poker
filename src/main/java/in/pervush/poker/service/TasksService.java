@@ -28,10 +28,11 @@ public class TasksService {
     private final TasksRepository tasksRepository;
     private final TeamsService teamsService;
 
-    public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search)
+    public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search,
+                                 @Nullable final Boolean finished)
             throws TeamNotFoundException {
         teamsService.validateTeamMember(teamUuid, userUuid);
-        return tasksRepository.getNotDeletedTasks(teamUuid, search);
+        return tasksRepository.getNotDeletedTasks(teamUuid, search, finished);
     }
 
     public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid)

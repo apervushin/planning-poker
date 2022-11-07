@@ -55,12 +55,16 @@ public interface TasksMapper {
                             or lower(t.url) like '%'||lower(#{search})||'%'
                         )
                     </if>
+                    <if test="finished != null">
+                        and t.is_finished = #{finished}
+                    </if>
                 group by t.task_uuid
                 order by create_dtm desc
             </script>
             """)
     List<DBTask> getNotDeletedTasks(@Param("teamUuid") UUID teamUuid,
-                                    @Nullable @Param("search") String search);
+                                    @Nullable @Param("search") String search,
+                                    @Nullable @Param("finished") Boolean finished);
 
     @ResultMap("task")
     @Select("""

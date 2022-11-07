@@ -56,10 +56,11 @@ public class TasksController {
             }
     )
     public Collection<TaskView> getTasks(@PathVariable("teamUuid") final UUID teamUuid,
-                                         @RequestParam(name = "search", required = false) String search) {
+                                         @RequestParam(name = "search", required = false) String search,
+                                         @RequestParam(name = "finished", required = false) Boolean finished) {
         final var user = requestHelper.getAuthenticatedUser();
 
-        return tasksService.getTasks(user.userUuid(), teamUuid, search).stream()
+        return tasksService.getTasks(user.userUuid(), teamUuid, search, finished).stream()
                 .map(v -> {
                     final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), teamUuid);
 

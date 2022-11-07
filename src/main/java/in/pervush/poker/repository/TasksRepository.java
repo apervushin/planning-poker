@@ -18,8 +18,9 @@ public class TasksRepository {
 
     private final TasksMapper mapper;
 
-    public List<DBTask> getNotDeletedTasks(final UUID teamUuid, @Nullable final String search) {
-        return mapper.getNotDeletedTasks(teamUuid, search);
+    public List<DBTask> getNotDeletedTasks(final UUID teamUuid, @Nullable final String search,
+                                           @Nullable final Boolean finished) {
+        return mapper.getNotDeletedTasks(teamUuid, search, finished);
     }
 
     public DBTask getNotDeletedTask(final UUID taskUuid, final UUID teamUuid, final UUID requestingUserUuid)

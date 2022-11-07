@@ -137,7 +137,7 @@ public class TasksServiceTests {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://yahoO.com", Scale.FIBONACCI, teamUuid);
 
-        final var actual = tasksService.getTasks(userUuid, teamUuid, "Yahoo");
+        final var actual = tasksService.getTasks(userUuid, teamUuid, "Yahoo", null);
         assertThat(actual).containsExactly(expected);
     }
 
@@ -148,7 +148,19 @@ public class TasksServiceTests {
         tasksService.createTask(userUuid, "Google task",
                 "http://example.com", Scale.FIBONACCI, teamUuid);
 
-        final var actual = tasksService.getTasks(userUuid, teamUuid, "yahoO");
+        final var actual = tasksService.getTasks(userUuid, teamUuid, "yahoO", null);
         assertThat(actual).containsExactly(expected);
+    }
+
+    @Test
+    void getTasks_notFinished_success() {
+        final var task1 = tasksService.createTask(userUuid, "Test task",
+                "http://ooglE.com", Scale.FIBONACCI, teamUuid);
+        final var task2 = tasksService.createTask(userUuid, "Test task",
+                "http://yahoO.com", Scale.FIBONACCI, teamUuid);
+        tasksService.finishTask(task2.taskUuid(), userUuid, teamUuid);
+
+        final var actual = tasksService.getTasks(userUuid, teamUuid, null, false);
+        assertThat(actual).containsExactly(task1);
     }
 }
