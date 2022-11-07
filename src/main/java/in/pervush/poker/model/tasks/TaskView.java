@@ -16,7 +16,7 @@ public record TaskView(
         String url,
         @Schema(required = true) Scale scale,
         @Schema(required = true) boolean finished,
-        @Schema(description = "The requesting userUuid' vote value") VoteValue voteValue,
+        @Schema(description = "The requesting user' vote value") VoteValue voteValue,
         List<UserPublicView> votedUsers
 ) {
 

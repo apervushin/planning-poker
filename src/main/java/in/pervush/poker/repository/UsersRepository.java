@@ -31,11 +31,15 @@ public class UsersRepository {
         return new DBUser(userUuid, email, passwordEncoded, name, createDtm);
     }
 
-    public DBUser getUser(final UUID userUuid) {
+    public DBUser getUser(final UUID userUuid) throws UserNotFoundException{
         return mapper.getUser(userUuid).orElseThrow(UserNotFoundException::new);
     }
 
-    public DBUser getUser(final String email, final String password) {
+    public DBUser getUser(final String email) throws UserNotFoundException{
+        return mapper.getUserByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    public DBUser getUser(final String email, final String password) throws UserNotFoundException{
         final var dbUser = mapper.getUserByEmail(email).orElseThrow(UserNotFoundException::new);
         if (!passwordEncoder.matches(password, dbUser.passwordEncoded())) {
             throw new UserNotFoundException();

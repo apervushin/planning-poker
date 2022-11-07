@@ -32,13 +32,14 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Deprecated
 @RestController
-@RequestMapping(value = "/api/v1/teams/{teamUuid}/tasks")
-@Tag(name="Team tasks")
+@RequestMapping(value = "/api/v1/tasks")
+@Tag(name="Tasks")
 @RequiredArgsConstructor
 @Validated
 @SecurityRequirement(name = "Authorization")
-public class TasksController {
+public class TasksControllerV1 {
 
     private final TasksService tasksService;
     private final VotesService votesService;
@@ -50,16 +51,16 @@ public class TasksController {
             summary = "Get my tasks",
             responses = {
                     @ApiResponse(responseCode = "200"),
-                    @ApiResponse(responseCode = "401", content = @Content()),
-                    @ApiResponse(responseCode = "404", content = @Content(), description = "Team not found or you are not team member")
-            }
+                    @ApiResponse(responseCode = "401", content = @Content())
+            },
+            deprecated = true
     )
-    public Collection<TaskView> getTasks(@PathVariable("teamUuid") final UUID teamUuid) {
+    public Collection<TaskView> getTasks() {
         final var user = requestHelper.getAuthenticatedUser();
 
-        return tasksService.getTasks(user.userUuid(), teamUuid).stream()
+        return tasksService.getTasks(user.userUuid(), user.userUuid()).stream()
                 .map(v -> {
-                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), teamUuid);
+                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), user.userUuid());
 
                     return TaskView.of(
                             v,
@@ -75,15 +76,15 @@ public class TasksController {
                     @ApiResponse(responseCode = "200"),
                     @ApiResponse(responseCode = "401", content = @Content()),
                     @ApiResponse(responseCode = "404", content = @Content())
-            }
+            },
+            deprecated = true
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}")
-    public TaskView getTask(@PathVariable("teamUuid") final UUID teamUuid,
-                            @PathVariable("taskUuid") final UUID taskUuid) {
+    public TaskView getTask(@PathVariable("taskUuid") final UUID taskUuid) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        final var dbTask = tasksService.getTask(taskUuid, userUuid, teamUuid);
+        final var dbTask = tasksService.getTask(taskUuid, userUuid, userUuid);
         final var taskUser = userService.getUser(dbTask.userUuid());
-        final var userUuids = votesService.getVotedUserUuids(taskUuid, userUuid, teamUuid);
+        final var userUuids = votesService.getVotedUserUuids(taskUuid, userUuid, userUuid);
         return TaskView.of(dbTask, taskUser,
                 userUuids.stream().map(userService::getUser).collect(Collectors.toList()));
     }
@@ -94,12 +95,12 @@ public class TasksController {
                     @ApiResponse(responseCode = "201"),
                     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "401", content = @Content())
-            }
+            },
+            deprecated = true
     )
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public TaskView createTask(@PathVariable("teamUuid") final UUID teamUuid,
-                               @RequestBody @Valid final CreateTaskRequest request) {
+    public TaskView createTask(@RequestBody @Valid final CreateTaskRequest request) {
         final var user = requestHelper.getAuthenticatedUser();
         return TaskView.of(
                 tasksService.createTask(
@@ -107,7 +108,7 @@ public class TasksController {
                         request.getName(),
                         request.getUrl(),
                         request.getScale(),
-                        teamUuid
+                        user.userUuid()
                 ),
                 user,
                 Collections.emptyList()
@@ -121,13 +122,13 @@ public class TasksController {
                     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "401", content = @Content()),
                     @ApiResponse(responseCode = "404", content = @Content())
-            }
+            },
+            deprecated = true
     )
     @PostMapping(value = "/{taskUuid}/finish")
     @ResponseStatus(HttpStatus.CREATED)
-    public void finishTask(@PathVariable("teamUuid") final UUID teamUuid,
-                           @PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), teamUuid);
+    public void finishTask(@PathVariable("taskUuid") final UUID taskUuid) {
+        tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), requestHelper.getAuthenticatedUserUuid());
     }
 
     @Operation(
@@ -137,12 +138,12 @@ public class TasksController {
                     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "401", content = @Content()),
                     @ApiResponse(responseCode = "404", content = @Content())
-            }
+            },
+            deprecated = true
     )
-    @DeleteMapping(value = "/{taskUuid}")
+    @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTask(@PathVariable("teamUuid") final UUID teamUuid,
-                           @PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.deleteTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), teamUuid);
+    public void deleteTask(@PathVariable("taskUuid") final UUID taskUuid) {
+        tasksService.deleteTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), requestHelper.getAuthenticatedUserUuid());
     }
 }

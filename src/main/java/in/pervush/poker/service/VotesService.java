@@ -3,7 +3,6 @@ package in.pervush.poker.service;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
-import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
@@ -24,9 +23,12 @@ public class VotesService {
     private final VotesMapper mapper;
     private final UsersRepository usersRepository;
     private final TasksRepository tasksRepository;
+    private final TeamsService teamsService;
 
-    public void createVote(final UUID taskUuid, final UUID userUuid, final VoteValue voteValue) {
-        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, userUuid);
+
+    public void createVote(final UUID taskUuid, final UUID teamUuid, final UUID userUuid, final VoteValue voteValue) {
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, teamUuid, userUuid);
 
         if (dbTask.scale() != voteValue.getScale()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
@@ -38,16 +40,18 @@ public class VotesService {
         mapper.createVote(taskUuid, userUuid, voteValue, InstantUtils.now());
     }
 
-    public List<DBVote> getVotes(final UUID taskUuid, final UUID requestingUserUuid) {
-        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, requestingUserUuid);
+    public List<DBVote> getVotes(final UUID taskUuid, final UUID teamUuid, final UUID requestingUserUuid) {
+        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, teamUuid, requestingUserUuid);
         if (!dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
         return mapper.getVotes(taskUuid);
     }
 
-    public List<UUID> getVotedUserUuids(final UUID taskUuid, final UUID requestingUserUuid) {
-        tasksRepository.getNotDeletedTask(taskUuid, requestingUserUuid);
+    public List<UUID> getVotedUserUuids(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid) {
+        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        tasksRepository.getNotDeletedTask(taskUuid, teamUuid, requestingUserUuid);
         return mapper.getVotes(taskUuid).stream().map(DBVote::userUuid).collect(Collectors.toList());
     }
 

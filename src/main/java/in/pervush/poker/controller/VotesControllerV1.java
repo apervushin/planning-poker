@@ -32,13 +32,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Deprecated
 @RestController
-@RequestMapping(value = "/api/v1/teams/{teamUuid}/tasks/{taskUuid}/votes")
-@Tag(name="Task votes")
+@RequestMapping(value = "/api/v1/tasks/{taskUuid}/votes")
+@Tag(name="Votes")
 @Validated
 @SecurityRequirement(name = "Authorization")
 @RequiredArgsConstructor
-public class VotesController {
+public class VotesControllerV1 {
 
     private final VotesService votesService;
     private final RequestHelper requestHelper;
@@ -50,15 +51,16 @@ public class VotesController {
                     @ApiResponse(responseCode = "201"),
                     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "401", content = @Content())
-            }
+            },
+            deprecated = true
     )
     @PutMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public void createVote(@PathVariable("teamUuid") final UUID teamUuid,
-                           @PathVariable("taskUuid") final UUID taskUuid,
+    public void createVote(@PathVariable("taskUuid") final UUID taskUuid,
                            @RequestBody @Valid CreateVoteRequest request) {
         final var vote = request.getValue();
-        votesService.createVote(taskUuid, teamUuid, requestHelper.getAuthenticatedUserUuid(), vote);
+        votesService.createVote(taskUuid, requestHelper.getAuthenticatedUserUuid(),
+                requestHelper.getAuthenticatedUserUuid(), vote);
     }
 
     @Operation(
@@ -67,13 +69,13 @@ public class VotesController {
                     @ApiResponse(responseCode = "200"),
                     @ApiResponse(responseCode = "401", content = @Content()),
                     @ApiResponse(responseCode = "404", content = @Content())
-            }
+            },
+            deprecated = true
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<VotesStatView> getVotes(@PathVariable("teamUuid") final UUID teamUuid,
-                                        @PathVariable("taskUuid") final UUID taskUuid) {
+    public List<VotesStatView> getVotes(@PathVariable("taskUuid") final UUID taskUuid) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        return votesService.getVotes(taskUuid, teamUuid, userUuid).stream()
+        return votesService.getVotes(taskUuid, userUuid, userUuid).stream()
                 .map(v -> Pair.of(v, userService.getUser(v.userUuid())))
                 .collect(Collectors.groupingBy(
                         a -> a.getLeft().vote(),
@@ -87,4 +89,5 @@ public class VotesController {
                 ))
                 .collect(Collectors.toList());
     }
+
 }
