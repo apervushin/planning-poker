@@ -12,6 +12,7 @@ import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
+import in.pervush.poker.repository.postgres.UsersMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +22,15 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringJUnitConfig({VotesService.class, UsersRepository.class, TasksRepository.class, TasksService.class,
-        TeamsRepository.class, TeamsService.class})
+@SpringJUnitConfig({VotesService.class, TasksRepository.class, TasksService.class, TeamsRepository.class,
+        TeamsService.class, UsersRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
 @Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
@@ -38,15 +40,15 @@ public class VotesServiceTests {
     private static final String USER_EMAIL = "test@example.com";
     private static final String USER_PASSWORD = "abc";
     private static final String USER_NAME = "Test user";
+    private final UUID userUuid = UUID.randomUUID();
     private UUID taskUuid;
-    private UUID userUuid;
     private UUID teamUuid;
 
     @Autowired
     private VotesService service;
 
     @Autowired
-    private UsersRepository usersRepository;
+    private UsersMapper usersMapper;
 
     @Autowired
     private TasksService tasksService;
@@ -56,7 +58,7 @@ public class VotesServiceTests {
 
     @BeforeEach
     void initUserAndTask() {
-        this.userUuid = usersRepository.createUser(USER_EMAIL, USER_PASSWORD, USER_NAME).userUuid();
+        usersMapper.createUser(userUuid, USER_EMAIL, USER_PASSWORD, USER_NAME, Instant.now());
         this.teamUuid = teamsRepository.createTeam(userUuid, "Test team").teamUuid();
         this.taskUuid = tasksService.createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI,
                 teamUuid).taskUuid();
@@ -82,14 +84,14 @@ public class VotesServiceTests {
     void getVotesStat_success() {
         // create second user
         final String user2Name = "qwerty1";
-        final var user2Uuid = usersRepository.createUser("test1@example.com", USER_PASSWORD, user2Name)
-                .userUuid();
+        UUID user2Uuid = UUID.fromString("68fb0338-9bdd-4fff-bc30-c1f688de531a");
+        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, Instant.now());
         teamsRepository.addTeamMember(teamUuid, user2Uuid, MembershipStatus.MEMBER);
 
         // create third user
         final String user3Name = "qwerty2";
-        final var user3Uuid = usersRepository.createUser("test2@example.com", USER_PASSWORD, user3Name)
-                .userUuid();
+        UUID user3Uuid = UUID.fromString("ade18a1c-0bfb-4a05-bcd1-2515d4658a08");
+        usersMapper.createUser(user3Uuid,"test2@example.com", USER_PASSWORD, user3Name, Instant.now());
         teamsRepository.addTeamMember(teamUuid, user3Uuid, MembershipStatus.MEMBER);
 
         // create votes

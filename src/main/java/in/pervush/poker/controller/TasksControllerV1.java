@@ -58,7 +58,7 @@ public class TasksControllerV1 {
     public Collection<TaskView> getTasks() {
         final var user = requestHelper.getAuthenticatedUser();
 
-        return tasksService.getTasks(user.userUuid(), user.userUuid()).stream()
+        return tasksService.getTasks(user.userUuid(), user.userUuid(), null).stream()
                 .map(v -> {
                     final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), user.userUuid());
 

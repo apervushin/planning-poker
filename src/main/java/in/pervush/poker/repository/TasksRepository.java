@@ -8,6 +8,7 @@ import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,8 +18,8 @@ public class TasksRepository {
 
     private final TasksMapper mapper;
 
-    public List<DBTask> getNotDeletedTasks(final UUID teamUuid) {
-        return mapper.getNotDeletedTasks(teamUuid);
+    public List<DBTask> getNotDeletedTasks(final UUID teamUuid, @Nullable final String search) {
+        return mapper.getNotDeletedTasks(teamUuid, search);
     }
 
     public DBTask getNotDeletedTask(final UUID taskUuid, final UUID teamUuid, final UUID requestingUserUuid)

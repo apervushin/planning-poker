@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -32,25 +33,34 @@ public interface TasksMapper {
             @Arg(column = "team_uuid", javaType = UUID.class),
     })
     @Select("""
-            select
-                t.task_uuid,
-                max(t.user_uuid::varchar)::uuid as user_uuid,
-                max(t.name) as name,
-                max(t.url) as url,
-                max(t.scale) as scale,
-                max(t.create_dtm) as create_dtm,
-                max(t.is_deleted::int)::bool as is_deleted,
-                max(t.is_finished::int)::bool as is_finished,
-                max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote,
-                max(t.team_uuid::varchar)::uuid as team_uuid
-            from tasks t
-            left join votes v on t.task_uuid = v.task_uuid
-            where not t.is_deleted
-                and t.team_uuid = #{teamUuid}
-            group by t.task_uuid
-            order by create_dtm desc
+            <script>
+                select
+                    t.task_uuid,
+                    max(t.user_uuid::varchar)::uuid as user_uuid,
+                    max(t.name) as name,
+                    max(t.url) as url,
+                    max(t.scale) as scale,
+                    max(t.create_dtm) as create_dtm,
+                    max(t.is_deleted::int)::bool as is_deleted,
+                    max(t.is_finished::int)::bool as is_finished,
+                    max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote,
+                    max(t.team_uuid::varchar)::uuid as team_uuid
+                from tasks t
+                left join votes v on t.task_uuid = v.task_uuid
+                where not t.is_deleted
+                    and t.team_uuid = #{teamUuid}
+                    <if test="search != null">
+                        and (
+                            lower(t.name) like '%'||lower(#{search})||'%'
+                            or lower(t.url) like '%'||lower(#{search})||'%'
+                        )
+                    </if>
+                group by t.task_uuid
+                order by create_dtm desc
+            </script>
             """)
-    List<DBTask> getNotDeletedTasks(@Param("teamUuid") UUID teamUuid);
+    List<DBTask> getNotDeletedTasks(@Param("teamUuid") UUID teamUuid,
+                                    @Nullable @Param("search") String search);
 
     @ResultMap("task")
     @Select("""

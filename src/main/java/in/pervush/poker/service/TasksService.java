@@ -13,6 +13,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,9 +28,10 @@ public class TasksService {
     private final TasksRepository tasksRepository;
     private final TeamsService teamsService;
 
-    public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid) throws TeamNotFoundException {
+    public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search)
+            throws TeamNotFoundException {
         teamsService.validateTeamMember(teamUuid, userUuid);
-        return tasksRepository.getNotDeletedTasks(teamUuid);
+        return tasksRepository.getNotDeletedTasks(teamUuid, search);
     }
 
     public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid)
