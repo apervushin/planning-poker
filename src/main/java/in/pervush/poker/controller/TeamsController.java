@@ -95,7 +95,7 @@ public class TeamsController {
                     @ApiResponse(responseCode = "403", content = @Content(), description = "Team not exists or you are not owner of the team")
             }
     )
-    @DeleteMapping(value = "/{teamUuid}/leave")
+    @PostMapping(value = "/{teamUuid}/leave")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leaveTeam(@PathVariable final UUID teamUuid) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
