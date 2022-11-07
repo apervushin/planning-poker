@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,7 +75,7 @@ public class TeamMembersController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     public void inviteTeamMember(@PathVariable("teamUuid") final UUID teamUuid,
-                                 @RequestBody final InviteTeamMemberRequest request) {
+                                 @RequestBody @Valid final InviteTeamMemberRequest request) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
         try {
             teamsService.inviteTeamMember(teamUuid, userUuid, request.getEmail());

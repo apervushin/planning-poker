@@ -14,6 +14,7 @@ import org.apache.ibatis.annotations.Update;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -120,11 +121,17 @@ public interface TasksMapper {
                         @Param("teamUuid") UUID teamUuid);
 
     @Update("""
-            update tasks
-            set is_deleted = true
-            where not is_deleted and team_uuid = #{teamUuid} and task_uuid = #{taskUuid}
+            <script>
+                update tasks
+                set is_deleted = true
+                where not is_deleted and team_uuid = #{teamUuid}
+                    and <foreach item="taskUuid" index="index" collection="taskUuids"
+                                 open="task_uuid in (" separator="," close=")" nullable="false">
+                          #{taskUuid}
+                        </foreach>
+            </script>
             """)
-    boolean setDeleted(@Param("taskUuid") UUID taskUuid,
+    boolean setDeleted(@Param("taskUuids") Collection<UUID> taskUuids,
                        @Param("teamUuid") UUID teamUuid);
 
     @Insert("""

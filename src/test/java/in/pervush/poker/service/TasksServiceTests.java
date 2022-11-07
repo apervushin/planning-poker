@@ -20,6 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,7 +126,7 @@ public class TasksServiceTests {
     void createAndDeleteTask_success() {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI, teamUuid);
-        tasksService.deleteTask(expected.taskUuid(), expected.userUuid(), teamUuid);
+        tasksService.deleteTasks(Set.of(expected.taskUuid()), expected.userUuid(), teamUuid);
         assertThrows(TaskNotFoundException.class,
                 () -> tasksService.getTask(expected.taskUuid(), expected.userUuid(), teamUuid));
     }

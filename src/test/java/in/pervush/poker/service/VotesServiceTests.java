@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -115,7 +116,7 @@ public class VotesServiceTests {
     @Test
     void getVotesStat_notFoundException() {
         service.createVote(taskUuid, teamUuid, userUuid, VoteValue.VALUE_3);
-        tasksService.deleteTask(taskUuid, userUuid, teamUuid);
+        tasksService.deleteTasks(Set.of(taskUuid), userUuid, teamUuid);
         assertThrows(TaskNotFoundException.class, () -> service.getVotes(taskUuid, teamUuid, userUuid));
     }
 }

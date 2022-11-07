@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -59,9 +60,9 @@ public class TasksService {
         tasksRepository.finishTask(taskUuid, teamUuid);
     }
 
-    public void deleteTask(final UUID taskUuid, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
+    public void deleteTasks(final Set<UUID> taskUuids, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
         teamsService.validateTeamMember(teamUuid, userUuid);
-        tasksRepository.deleteTask(taskUuid, teamUuid);
+        tasksRepository.deleteTasks(taskUuids, teamUuid);
     }
 
     private static void validateTaskName(final String name) {

@@ -2,6 +2,7 @@ package in.pervush.poker.controller;
 
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
+import in.pervush.poker.model.tasks.DeleteTasksRequest;
 import in.pervush.poker.model.tasks.TaskView;
 import in.pervush.poker.service.TasksService;
 import in.pervush.poker.service.UserService;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -133,6 +135,24 @@ public class TasksController {
         tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), teamUuid);
     }
 
+    @Deprecated
+    @Operation(
+            summary = "Delete task",
+            responses = {
+                    @ApiResponse(responseCode = "204"),
+                    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "401", content = @Content()),
+                    @ApiResponse(responseCode = "404", content = @Content())
+            },
+            deprecated = true
+    )
+    @DeleteMapping(value = "/{taskUuid}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTask(@PathVariable("teamUuid") final UUID teamUuid,
+                           @PathVariable("taskUuid") final UUID taskUuid) {
+        tasksService.deleteTasks(Set.of(taskUuid), requestHelper.getAuthenticatedUserUuid(), teamUuid);
+    }
+
     @Operation(
             summary = "Delete task",
             responses = {
@@ -142,10 +162,10 @@ public class TasksController {
                     @ApiResponse(responseCode = "404", content = @Content())
             }
     )
-    @DeleteMapping(value = "/{taskUuid}")
+    @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTask(@PathVariable("teamUuid") final UUID teamUuid,
-                           @PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.deleteTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), teamUuid);
+    public void deleteTasks(@PathVariable("teamUuid") final UUID teamUuid,
+                           @RequestBody @Valid final DeleteTasksRequest request) {
+        tasksService.deleteTasks(request.getTaskUuids(), requestHelper.getAuthenticatedUserUuid(), teamUuid);
     }
 }

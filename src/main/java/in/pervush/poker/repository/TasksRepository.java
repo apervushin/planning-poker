@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,8 +41,11 @@ public class TasksRepository {
         }
     }
 
-    public void deleteTask(final UUID taskUuid, final UUID teamUuid) throws TaskNotFoundException {
-        final boolean updated = mapper.setDeleted(taskUuid, teamUuid);
+    public void deleteTasks(final Collection<UUID> taskUuids, final UUID teamUuid) throws TaskNotFoundException {
+        if (taskUuids.isEmpty()) {
+            return;
+        }
+        final boolean updated = mapper.setDeleted(taskUuids, teamUuid);
         if (!updated) {
             throw new TaskNotFoundException();
         }

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public class TeamsController {
     )
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public UserTeamView createTeam(@RequestBody final CreateTeamRequest request) {
+    public UserTeamView createTeam(@RequestBody @Valid final CreateTeamRequest request) {
         final var userUuid = requestHelper.getAuthenticatedUserUuid();
         final var userTeam = teamsService.createTeam(userUuid, request.getTeamName());
         return UserTeamView.of(userTeam, userService.getUser(userUuid));
