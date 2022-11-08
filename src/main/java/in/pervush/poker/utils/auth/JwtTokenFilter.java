@@ -31,9 +31,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
         final var cookie = WebUtils.getCookie(request, RequestHelper.SESSION_COOKIE_NAME);
-        System.out.println("!!!!" + cookie);
         if (cookie == null) {
-            filterChain.doFilter(request, response);
+            setUnauthorized(request, response, filterChain);
             return;
         }
 
@@ -41,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             userUuid = requestHelper.getUserUuid(cookie.getValue());
         } catch (InvalidJwtTokenException e) {
-            filterChain.doFilter(request, response);
+            setUnauthorized(request, response, filterChain);
             return;
         }
 
@@ -49,7 +48,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             user = usersRepository.getUser(userUuid);
         } catch (UserNotFoundException ex) {
-            filterChain.doFilter(request, response);
+            setUnauthorized(request, response, filterChain);
             return;
         }
 
@@ -62,6 +61,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        filterChain.doFilter(request, response);
+    }
+
+    private static void setUnauthorized(final HttpServletRequest request, final HttpServletResponse response,
+                                        final FilterChain filterChain) throws ServletException, IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         filterChain.doFilter(request, response);
     }
 }

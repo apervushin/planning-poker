@@ -6,6 +6,7 @@ import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.utils.auth.JwtTokenFilter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 @Import({PasswordEncoderConfiguration.class, PostgresConfiguration.class})
+@Slf4j
 public class SecurityConfiguration {
 
     private final String apiDocsPath;
