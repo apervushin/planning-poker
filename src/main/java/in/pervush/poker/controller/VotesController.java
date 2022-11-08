@@ -1,12 +1,12 @@
 package in.pervush.poker.controller;
 
 import in.pervush.poker.model.ErrorResponse;
+import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.model.user.UserPublicView;
 import in.pervush.poker.model.votes.CreateVoteRequest;
 import in.pervush.poker.model.votes.VotesStatView;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.service.VotesService;
-import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +42,6 @@ import java.util.stream.Collectors;
 public class VotesController {
 
     private final VotesService votesService;
-    private final RequestHelper requestHelper;
     private final UserService userService;
 
     @Operation(
@@ -56,9 +56,10 @@ public class VotesController {
     @ResponseStatus(HttpStatus.CREATED)
     public void createVote(@PathVariable("teamUuid") final UUID teamUuid,
                            @PathVariable("taskUuid") final UUID taskUuid,
-                           @RequestBody @Valid CreateVoteRequest request) {
+                           @RequestBody @Valid CreateVoteRequest request,
+                           @AuthenticationPrincipal final UserDetailsImpl user) {
         final var vote = request.getValue();
-        votesService.createVote(taskUuid, teamUuid, requestHelper.getAuthenticatedUserUuid(), vote);
+        votesService.createVote(taskUuid, teamUuid, user.getUserUuid(), vote);
     }
 
     @Operation(
@@ -71,9 +72,9 @@ public class VotesController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VotesStatView> getVotes(@PathVariable("teamUuid") final UUID teamUuid,
-                                        @PathVariable("taskUuid") final UUID taskUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        return votesService.getVotes(taskUuid, teamUuid, userUuid).stream()
+                                        @PathVariable("taskUuid") final UUID taskUuid,
+                                        @AuthenticationPrincipal final UserDetailsImpl user) {
+        return votesService.getVotes(taskUuid, teamUuid, user.getUserUuid()).stream()
                 .map(v -> Pair.of(v, userService.getUser(v.userUuid())))
                 .collect(Collectors.groupingBy(
                         a -> a.getLeft().vote(),

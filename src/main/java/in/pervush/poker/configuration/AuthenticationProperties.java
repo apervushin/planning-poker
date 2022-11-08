@@ -12,6 +12,7 @@ import java.time.Duration;
 public class AuthenticationProperties {
 
     private Cookie cookie = new Cookie();
+    private String jwtSecret;
 
     @Data
     public static class Cookie {

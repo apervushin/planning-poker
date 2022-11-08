@@ -4,9 +4,9 @@ import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTeamRequest;
 import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.model.teams.UserTeamView;
+import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.service.TeamsService;
 import in.pervush.poker.service.UserService;
-import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +40,6 @@ public class TeamsController {
 
     private final TeamsService teamsService;
     private final UserService userService;
-    private final RequestHelper requestHelper;
 
     @Operation(
             summary = "Create team",
@@ -51,8 +51,9 @@ public class TeamsController {
     )
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public UserTeamView createTeam(@RequestBody @Valid final CreateTeamRequest request) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+    public UserTeamView createTeam(@RequestBody @Valid final CreateTeamRequest request,
+                                   @AuthenticationPrincipal final UserDetailsImpl user) {
+        final var userUuid = user.getUserUuid();
         final var userTeam = teamsService.createTeam(userUuid, request.getTeamName());
         return UserTeamView.of(userTeam, userService.getUser(userUuid));
     }
@@ -66,9 +67,10 @@ public class TeamsController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UserTeamView> getUserTeams(
-            @RequestParam(name = "membershipStatus", required = false) MembershipStatus membershipStatus
+            @RequestParam(name = "membershipStatus", required = false) MembershipStatus membershipStatus,
+            @AuthenticationPrincipal final UserDetailsImpl user
     ) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+        final var userUuid = user.getUserUuid();
         return teamsService.getTeams(userUuid, membershipStatus).stream()
                 .map(v -> UserTeamView.of(v, userService.getUser(v.userUuid()))).toList();
     }
@@ -83,9 +85,9 @@ public class TeamsController {
     )
     @DeleteMapping(value = "/{teamUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTeam(@PathVariable final UUID teamUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        teamsService.deleteTeam(teamUuid, userUuid);
+    public void deleteTeam(@PathVariable final UUID teamUuid,
+                           @AuthenticationPrincipal final UserDetailsImpl user) {
+        teamsService.deleteTeam(teamUuid, user.getUserUuid());
     }
 
     @Operation(
@@ -98,8 +100,8 @@ public class TeamsController {
     )
     @PostMapping(value = "/{teamUuid}/leave")
     @ResponseStatus(HttpStatus.CREATED)
-    public void leaveTeam(@PathVariable final UUID teamUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        teamsService.deleteTeamMember(teamUuid, userUuid, userUuid);
+    public void leaveTeam(@PathVariable final UUID teamUuid,
+                          @AuthenticationPrincipal final UserDetailsImpl user) {
+        teamsService.deleteTeamMember(teamUuid, user.getUserUuid(), user.getUserUuid());
     }
 }
