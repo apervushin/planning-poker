@@ -6,6 +6,7 @@ import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.utils.auth.JwtTokenFilter;
+import in.pervush.poker.utils.auth.RequestHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,15 +35,17 @@ public class SecurityConfiguration {
 
     private final String apiDocsPath;
     private final String swaggerUiPath;
-
-    private final JwtTokenFilter jwtTokenFilter;
+    private final RequestHelper requestHelper;
+    private final UsersRepository usersRepository;
 
     public SecurityConfiguration(@Value("${springdoc.api-docs.path:}") final String apiDocsPath,
                                  @Value("${springdoc.swagger-ui.path:}") final String swaggerUiPath,
-                                 final JwtTokenFilter jwtTokenFilter) {
+                                 final RequestHelper requestHelper,
+                                 final UsersRepository usersRepository) {
         this.apiDocsPath = apiDocsPath;
         this.swaggerUiPath = swaggerUiPath;
-        this.jwtTokenFilter = jwtTokenFilter;
+        this.requestHelper = requestHelper;
+        this.usersRepository = usersRepository;
     }
 
     @Bean
@@ -58,14 +61,18 @@ public class SecurityConfiguration {
 
                 .and()
                 .authorizeRequests()
-                .antMatchers(LoginController.PATH + "**", RegistrationController.PATH + "**")
+                .antMatchers(
+                        LoginController.PATH + "**",
+                        RegistrationController.PATH + "**"
+                )
                 .permitAll()
 
                 .anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider);
 
-        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        // Manually create JwtTokenFilter due to https://github.com/spring-projects/spring-security/issues/3958
+        http.addFilterBefore(new JwtTokenFilter(usersRepository, requestHelper), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
