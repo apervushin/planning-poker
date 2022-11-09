@@ -7,9 +7,9 @@ import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.InviteTeamMemberRequest;
 import in.pervush.poker.model.teams.UserTeamView;
+import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.service.TeamsService;
 import in.pervush.poker.service.UserService;
-import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +42,6 @@ public class TeamMembersController {
 
     private final TeamsService teamsService;
     private final UserService userService;
-    private final RequestHelper requestHelper;
 
     @Operation(
             summary = "Get team members",
@@ -52,9 +52,9 @@ public class TeamMembersController {
             }
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UserTeamView> getTeamMembers(@PathVariable("teamUuid") final UUID teamUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
-        return teamsService.getTeamMembers(teamUuid, userUuid).stream()
+    public List<UserTeamView> getTeamMembers(@PathVariable("teamUuid") final UUID teamUuid,
+                                             @AuthenticationPrincipal final UserDetailsImpl user) {
+        return teamsService.getTeamMembers(teamUuid, user.getUserUuid()).stream()
                 .map(v -> UserTeamView.of(v, userService.getUser(v.userUuid())))
                 .toList();
     }
@@ -75,10 +75,10 @@ public class TeamMembersController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     public void inviteTeamMember(@PathVariable("teamUuid") final UUID teamUuid,
-                                 @RequestBody @Valid final InviteTeamMemberRequest request) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+                                 @RequestBody @Valid final InviteTeamMemberRequest request,
+                                 @AuthenticationPrincipal final UserDetailsImpl user) {
         try {
-            teamsService.inviteTeamMember(teamUuid, userUuid, request.getEmail());
+            teamsService.inviteTeamMember(teamUuid, user.getUserUuid(), request.getEmail());
         } catch (UserAlreadyAddedException ex) {
             throw new ErrorStatusException(ErrorStatus.USER_ALREADY_ADDED);
         } catch (UserNotFoundException ex) {
@@ -95,8 +95,9 @@ public class TeamMembersController {
             }
     )
     @GetMapping(path = "/accept")
-    public void acceptTeamInvitation(@PathVariable("teamUuid") final UUID teamUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+    public void acceptTeamInvitation(@PathVariable("teamUuid") final UUID teamUuid,
+                                     @AuthenticationPrincipal final UserDetailsImpl user) {
+        final var userUuid = user.getUserUuid();
         teamsService.acceptTeamInvitation(teamUuid, userUuid);
     }
 
@@ -111,8 +112,9 @@ public class TeamMembersController {
     @DeleteMapping(value = "/{userUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTeamMember(@PathVariable("teamUuid") final UUID teamUuid,
-                                 @PathVariable("userUuid") final UUID deletingUserUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+                                 @PathVariable("userUuid") final UUID deletingUserUuid,
+                                 @AuthenticationPrincipal final UserDetailsImpl user) {
+        final var userUuid = user.getUserUuid();
         teamsService.deleteTeamMember(teamUuid, userUuid, deletingUserUuid);
     }
 }

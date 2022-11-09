@@ -4,10 +4,10 @@ import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
 import in.pervush.poker.model.tasks.DeleteTasksRequest;
 import in.pervush.poker.model.tasks.TaskView;
+import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.service.TasksService;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.service.VotesService;
-import in.pervush.poker.utils.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,6 @@ public class TasksController {
     private final TasksService tasksService;
     private final VotesService votesService;
     private final UserService userService;
-    private final RequestHelper requestHelper;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -59,16 +59,15 @@ public class TasksController {
     )
     public Collection<TaskView> getTasks(@PathVariable("teamUuid") final UUID teamUuid,
                                          @RequestParam(name = "search", required = false) String search,
-                                         @RequestParam(name = "finished", required = false) Boolean finished) {
-        final var user = requestHelper.getAuthenticatedUser();
-
-        return tasksService.getTasks(user.userUuid(), teamUuid, search, finished).stream()
+                                         @RequestParam(name = "finished", required = false) Boolean finished,
+                                         @AuthenticationPrincipal final UserDetailsImpl user) {
+        return tasksService.getTasks(user.getUserUuid(), teamUuid, search, finished).stream()
                 .map(v -> {
-                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), teamUuid);
+                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.getUserUuid(), teamUuid);
 
                     return TaskView.of(
                             v,
-                            user,
+                            userService.getUser(v.userUuid()),
                             votes.stream().map(userService::getUser).collect(Collectors.toList())
                     );
                 }).toList();
@@ -84,8 +83,9 @@ public class TasksController {
     )
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/{taskUuid}")
     public TaskView getTask(@PathVariable("teamUuid") final UUID teamUuid,
-                            @PathVariable("taskUuid") final UUID taskUuid) {
-        final var userUuid = requestHelper.getAuthenticatedUserUuid();
+                            @PathVariable("taskUuid") final UUID taskUuid,
+                            @AuthenticationPrincipal final UserDetailsImpl user) {
+        final var userUuid = user.getUserUuid();
         final var dbTask = tasksService.getTask(taskUuid, userUuid, teamUuid);
         final var taskUser = userService.getUser(dbTask.userUuid());
         final var userUuids = votesService.getVotedUserUuids(taskUuid, userUuid, teamUuid);
@@ -104,17 +104,17 @@ public class TasksController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public TaskView createTask(@PathVariable("teamUuid") final UUID teamUuid,
-                               @RequestBody @Valid final CreateTaskRequest request) {
-        final var user = requestHelper.getAuthenticatedUser();
+                               @RequestBody @Valid final CreateTaskRequest request,
+                               @AuthenticationPrincipal final UserDetailsImpl user) {
         return TaskView.of(
                 tasksService.createTask(
-                        user.userUuid(),
+                        user.getUserUuid(),
                         request.getName(),
                         request.getUrl(),
                         request.getScale(),
                         teamUuid
                 ),
-                user,
+                userService.getUser(user.getUserUuid()),
                 Collections.emptyList()
         );
     }
@@ -131,8 +131,9 @@ public class TasksController {
     @PostMapping(value = "/{taskUuid}/finish")
     @ResponseStatus(HttpStatus.CREATED)
     public void finishTask(@PathVariable("teamUuid") final UUID teamUuid,
-                           @PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.finishTask(taskUuid, requestHelper.getAuthenticatedUserUuid(), teamUuid);
+                           @PathVariable("taskUuid") final UUID taskUuid,
+                           @AuthenticationPrincipal final UserDetailsImpl user) {
+        tasksService.finishTask(taskUuid, user.getUserUuid(), teamUuid);
     }
 
     @Deprecated
@@ -149,8 +150,9 @@ public class TasksController {
     @DeleteMapping(value = "/{taskUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTask(@PathVariable("teamUuid") final UUID teamUuid,
-                           @PathVariable("taskUuid") final UUID taskUuid) {
-        tasksService.deleteTasks(Set.of(taskUuid), requestHelper.getAuthenticatedUserUuid(), teamUuid);
+                           @PathVariable("taskUuid") final UUID taskUuid,
+                           @AuthenticationPrincipal final UserDetailsImpl user) {
+        tasksService.deleteTasks(Set.of(taskUuid), user.getUserUuid(), teamUuid);
     }
 
     @Operation(
@@ -165,7 +167,8 @@ public class TasksController {
     @DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTasks(@PathVariable("teamUuid") final UUID teamUuid,
-                           @RequestBody @Valid final DeleteTasksRequest request) {
-        tasksService.deleteTasks(request.getTaskUuids(), requestHelper.getAuthenticatedUserUuid(), teamUuid);
+                            @RequestBody @Valid final DeleteTasksRequest request,
+                            @AuthenticationPrincipal final UserDetailsImpl user) {
+        tasksService.deleteTasks(request.getTaskUuids(), user.getUserUuid(), teamUuid);
     }
 }
