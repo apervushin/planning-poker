@@ -13,6 +13,7 @@ import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.repository.postgres.UsersMapper;
+import in.pervush.poker.utils.InstantUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -59,7 +59,7 @@ public class VotesServiceTests {
 
     @BeforeEach
     void initUserAndTask() {
-        usersMapper.createUser(userUuid, USER_EMAIL, USER_PASSWORD, USER_NAME, Instant.now());
+        usersMapper.createUser(userUuid, USER_EMAIL, USER_PASSWORD, USER_NAME, InstantUtils.now());
         this.teamUuid = teamsRepository.createTeam(userUuid, "Test team").teamUuid();
         this.taskUuid = tasksService.createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI,
                 teamUuid).taskUuid();
@@ -86,13 +86,13 @@ public class VotesServiceTests {
         // create second user
         final String user2Name = "qwerty1";
         final UUID user2Uuid = UUID.fromString("03356451-decf-44ba-8eaa-3c320a946001");
-        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, Instant.now());
+        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, InstantUtils.now());
         teamsRepository.addTeamMember(teamUuid, user2Uuid, MembershipStatus.MEMBER);
 
         // create third user
         final String user3Name = "qwerty2";
         final UUID user3Uuid = UUID.fromString("3cb4a61d-ea90-485b-b43e-c8d51f66282d");
-        usersMapper.createUser(user3Uuid, "test2@example.com", USER_PASSWORD, user3Name, Instant.now());
+        usersMapper.createUser(user3Uuid, "test2@example.com", USER_PASSWORD, user3Name, InstantUtils.now());
         teamsRepository.addTeamMember(teamUuid, user3Uuid, MembershipStatus.MEMBER);
 
         // create votes

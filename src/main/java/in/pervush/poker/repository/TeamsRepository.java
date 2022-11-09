@@ -7,6 +7,7 @@ import in.pervush.poker.exception.UserAlreadyAddedException;
 import in.pervush.poker.model.teams.DBUserTeam;
 import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.repository.postgres.TeamsMapper;
+import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
@@ -26,7 +27,7 @@ public class TeamsRepository {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public DBUserTeam createTeam(final UUID ownerUserUuid, final String teamName) {
-        final var createDtm = Instant.now();
+        final var createDtm = InstantUtils.now();
         final var status = MembershipStatus.OWNER;
         final var teamUuid = UUID.randomUUID();
 
@@ -52,7 +53,7 @@ public class TeamsRepository {
 
     public void addTeamMember(final UUID teamUuid, final UUID userUuid, final MembershipStatus membershipStatus)
             throws UserAlreadyAddedException {
-        final var createDtm = Instant.now();
+        final var createDtm = InstantUtils.now();
         try {
             mapper.addTeamMember(teamUuid, userUuid, createDtm, membershipStatus);
         } catch (DuplicateKeyException ex) {

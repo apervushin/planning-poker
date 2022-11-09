@@ -5,12 +5,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import in.pervush.poker.configuration.AuthenticationProperties;
 import in.pervush.poker.exception.InvalidJwtTokenException;
 import in.pervush.poker.model.user.UserDetailsImpl;
+import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.time.Instant;
 import java.util.UUID;
 
 @Component
@@ -44,7 +44,7 @@ public class RequestHelper {
     }
 
     private String buildToken(final UserDetailsImpl user) {
-        final var now = Instant.now();
+        final var now = InstantUtils.now();
         return JWT.create()
                 .withIssuer(JWT_ISSUER)
                 .withIssuedAt(now)

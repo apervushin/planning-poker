@@ -12,6 +12,7 @@ import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
+import in.pervush.poker.utils.InstantUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,7 @@ public class TeamsServiceTests {
 
     @Test
     void createTeam_success() {
-        final var expected = new DBUserTeam(UUID.randomUUID(), "test", user.userUuid(), Instant.now(),
+        final var expected = new DBUserTeam(UUID.randomUUID(), "test", user.userUuid(), InstantUtils.now(),
                 MembershipStatus.OWNER);
         final var actual = service.createTeam(user.userUuid(), expected.teamName());
         assertThat(actual).usingRecursiveComparison().ignoringFields("teamUuid", "teamCreateDtm")
