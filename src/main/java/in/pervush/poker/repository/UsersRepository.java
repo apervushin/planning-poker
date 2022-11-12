@@ -1,5 +1,8 @@
 package in.pervush.poker.repository;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import in.pervush.poker.exception.EmailExistsException;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.DBUser;
@@ -10,7 +13,11 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @Repository
 @RequiredArgsConstructor
@@ -18,6 +25,16 @@ public class UsersRepository {
 
     private final UsersMapper mapper;
     private final PasswordEncoder passwordEncoder;
+
+    private final LoadingCache<UUID, Optional<DBUser>> usersCache = CacheBuilder.newBuilder()
+            .maximumSize(100)
+            .expireAfterWrite(Duration.of(10, ChronoUnit.MINUTES))
+            .build(new CacheLoader<>() {
+                @Override
+                public Optional<DBUser> load(final UUID userUuid) {
+                    return mapper.getUser(userUuid);
+                }
+            });
 
     public DBUser createUser(final String email, final String password, final String name) {
         final var userUuid = UUID.randomUUID();
@@ -32,7 +49,11 @@ public class UsersRepository {
     }
 
     public DBUser getUser(final UUID userUuid) throws UserNotFoundException {
-        return mapper.getUser(userUuid).orElseThrow(UserNotFoundException::new);
+        try {
+            return usersCache.get(userUuid).orElseThrow(UserNotFoundException::new);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public DBUser getUser(final String email) throws UserNotFoundException {
