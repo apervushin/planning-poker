@@ -44,7 +44,7 @@ public interface TasksMapper {
                     max(t.create_dtm) as create_dtm,
                     max(t.is_deleted::int)::bool as is_deleted,
                     max(t.is_finished::int)::bool as is_finished,
-                    max(case when t.user_uuid = v.user_uuid then v.vote else null end) as vote,
+                    max(case when #{requestingUserUuid} = v.user_uuid then v.vote else null end) as vote,
                     max(t.team_uuid::varchar)::uuid as team_uuid
                 from tasks t
                 left join votes v on t.task_uuid = v.task_uuid
@@ -64,6 +64,7 @@ public interface TasksMapper {
             </script>
             """)
     List<DBTask> getNotDeletedTasks(@Param("teamUuid") UUID teamUuid,
+                                    @Param("requestingUserUuid") UUID requestingUserUuid,
                                     @Nullable @Param("search") String search,
                                     @Nullable @Param("finished") Boolean finished);
 

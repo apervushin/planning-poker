@@ -33,7 +33,7 @@ public class TasksService {
                                  @Nullable final Boolean finished)
             throws TeamNotFoundException {
         teamsService.validateTeamMember(teamUuid, userUuid);
-        return tasksRepository.getNotDeletedTasks(teamUuid, search, finished);
+        return tasksRepository.getNotDeletedTasks(teamUuid, userUuid, search, finished);
     }
 
     public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid)

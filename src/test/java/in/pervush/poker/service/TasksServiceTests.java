@@ -6,10 +6,14 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
 import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
+import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
+import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
+import in.pervush.poker.repository.postgres.VotesMapper;
+import in.pervush.poker.utils.InstantUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +49,9 @@ public class TasksServiceTests {
     @Autowired
     private TeamsRepository teamsRepository;
 
+    @Autowired
+    private VotesMapper votesMapper;
+
     private UUID userUuid;
     private UUID teamUuid;
 
@@ -73,6 +80,27 @@ public class TasksServiceTests {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI, teamUuid);
         final var actual = tasksService.getTask(expected.taskUuid(), expected.userUuid(), teamUuid);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void createAndGetTask_withVote_success() {
+        final var task = tasksService.createTask(userUuid, "Test task",
+                "http://google.com:1234/task?param=123#test", Scale.FIBONACCI, teamUuid);
+        final var voteValue = VoteValue.VALUE_8;
+        votesMapper.createVote(task.taskUuid(), userUuid, voteValue, InstantUtils.now());
+        final var expected = new DBTask(
+                task.taskUuid(),
+                task.userUuid(),
+                task.name(),
+                task.url(),
+                task.scale(),
+                task.finished(),
+                task.createDtm(),
+                voteValue,
+                task.teamUuid()
+        );
+        final var actual = tasksService.getTask(task.taskUuid(), task.userUuid(), teamUuid);
         assertEquals(expected, actual);
     }
 
