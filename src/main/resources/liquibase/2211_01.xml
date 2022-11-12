@@ -76,4 +76,10 @@
             </column>
         </addColumn>
     </changeSet>
+    <changeSet id="2022-11-13-tasks-team_uuid-is_finished-index" author="alex">
+        <createIndex tableName="tasks" indexName="tasks_team_uuid_is_finished_i">
+            <column name="team_uuid" />
+            <column name="is_finished" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
