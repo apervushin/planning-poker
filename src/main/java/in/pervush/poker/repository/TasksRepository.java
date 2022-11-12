@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +58,10 @@ public class TasksRepository {
         final var taskUuid = UUID.randomUUID();
         mapper.createTask(userUuid, taskUuid, name, url, scale, now, teamUuid);
         return new DBTask(taskUuid, userUuid, name, url, scale, false, now, null, teamUuid);
+    }
+
+    public int getFinishedTasksCount(final UUID teamUuid, final Instant startDtm, final Instant endDtm) {
+        return mapper.getFinishedTasksCount(teamUuid, startDtm, endDtm);
     }
 
 }

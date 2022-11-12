@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -63,6 +64,12 @@ public class TasksService {
     public void deleteTasks(final Set<UUID> taskUuids, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
         teamsService.validateTeamMember(teamUuid, userUuid);
         tasksRepository.deleteTasks(taskUuids, teamUuid);
+    }
+
+    public int getFinishedTasksCount(final UUID teamUuid, final UUID userUuid, final Instant startDtm,
+                                     final Instant endDtm) throws TeamNotFoundException {
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        return tasksRepository.getFinishedTasksCount(teamUuid, startDtm, endDtm);
     }
 
     private static void validateTaskName(final String name) {

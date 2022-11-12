@@ -4,14 +4,17 @@ import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.TestPostgresConfiguration;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
+import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.model.teams.MembershipStatus;
+import in.pervush.poker.model.votes.DBUserVoteStat;
 import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
+import in.pervush.poker.repository.VotesRepository;
 import in.pervush.poker.repository.postgres.UsersMapper;
 import in.pervush.poker.utils.InstantUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +26,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringJUnitConfig({VotesService.class, UsersRepository.class, TasksRepository.class, TasksService.class,
-        TeamsRepository.class, TeamsService.class})
+        TeamsRepository.class, TeamsService.class, VotesRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
 @Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
@@ -82,7 +89,7 @@ public class VotesServiceTests {
     }
 
     @Test
-    void getVotesStat_success() {
+    void getVotes_success() {
         // create second user
         final String user2Name = "qwerty1";
         final UUID user2Uuid = UUID.fromString("03356451-decf-44ba-8eaa-3c320a946001");
@@ -118,5 +125,46 @@ public class VotesServiceTests {
         service.createVote(taskUuid, teamUuid, userUuid, VoteValue.VALUE_3);
         tasksService.deleteTasks(Set.of(taskUuid), userUuid, teamUuid);
         assertThrows(TaskNotFoundException.class, () -> service.getVotes(taskUuid, teamUuid, userUuid));
+    }
+
+    @Test
+    void getVotesStat_success() {
+        // create second task
+        final var task2Uuid = tasksService
+                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid).taskUuid();
+        // create third task
+        final var task3Uuid = tasksService
+                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid).taskUuid();
+
+        // create second user
+        final String user2Name = "qwerty1";
+        final UUID user2Uuid = UUID.randomUUID();
+        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, InstantUtils.now());
+        teamsRepository.addTeamMember(teamUuid, user2Uuid, MembershipStatus.MEMBER);
+
+        // create votes for tasks 1,2,3
+        service.createVote(taskUuid, teamUuid, userUuid, VoteValue.VALUE_3);
+        service.createVote(task2Uuid, teamUuid, userUuid, VoteValue.VALUE_3);
+        service.createVote(task2Uuid, teamUuid, user2Uuid, VoteValue.VALUE_1);
+        service.createVote(task3Uuid, teamUuid, user2Uuid, VoteValue.VALUE_1);
+
+        // finish tasks 1,2
+        tasksService.finishTask(taskUuid, userUuid, teamUuid);
+        tasksService.finishTask(task2Uuid, userUuid, teamUuid);
+
+        final List<DBUserVoteStat> expected = List.of(
+                new DBUserVoteStat(userUuid, 2),
+                new DBUserVoteStat(user2Uuid, 1)
+        );
+        final var actual = service.getVotesStat(teamUuid, userUuid,
+                InstantUtils.now().minus(Duration.of(1, ChronoUnit.HOURS)), Instant.now());
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void getVotesStat_notTeamMember_teamNotFoundException() {
+        assertThrows(TeamNotFoundException.class, () -> service.getVotesStat(teamUuid, UUID.randomUUID(),
+                InstantUtils.now(), Instant.now()));
     }
 }

@@ -4,10 +4,13 @@ import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
 import in.pervush.poker.model.tasks.DeleteTasksRequest;
 import in.pervush.poker.model.tasks.TaskView;
+import in.pervush.poker.model.tasks.TeamTasksStatView;
+import in.pervush.poker.model.tasks.UserVotesStatView;
 import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.service.TasksService;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.service.VotesService;
+import in.pervush.poker.utils.InstantUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,6 +33,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -50,7 +56,7 @@ public class TasksController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            summary = "Get my tasks",
+            summary = "Get team tasks",
             responses = {
                     @ApiResponse(responseCode = "200"),
                     @ApiResponse(responseCode = "401", content = @Content()),
@@ -170,5 +176,41 @@ public class TasksController {
                             @RequestBody @Valid final DeleteTasksRequest request,
                             @AuthenticationPrincipal final UserDetailsImpl user) {
         tasksService.deleteTasks(request.getTaskUuids(), user.getUserUuid(), teamUuid);
+    }
+
+    @GetMapping(path = "/votesStat", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Get team votes stat",
+            responses = {
+                    @ApiResponse(responseCode = "200"),
+                    @ApiResponse(responseCode = "401", content = @Content())
+            }
+    )
+    public TeamTasksStatView getTasksVotesStat(
+            @PathVariable("teamUuid") final UUID teamUuid,
+            @Schema(description = "Default is now() - 30 days")
+            @RequestParam(name = "startTm", required = false) final Long startTm,
+            @Schema(description = "Default is now()")
+            @RequestParam(name = "endTm", required = false) final Long endTm,
+            @AuthenticationPrincipal final UserDetailsImpl user
+    ) {
+        final var startDtm = getOrDefault(startTm, InstantUtils.now().minus(Duration.of(30, ChronoUnit.DAYS)));
+        final var endDtm = getOrDefault(endTm, InstantUtils.now());
+        final var userUuid = user.getUserUuid();
+
+        final var usersVotesStat = votesService
+                .getVotesStat(teamUuid, userUuid, startDtm, endDtm).stream()
+                .map(v -> UserVotesStatView.of(userService.getUser(v.userUuid()), v)).toList();
+        final int totalTasksCount = tasksService.getFinishedTasksCount(teamUuid, userUuid, startDtm, endDtm);
+
+        return new TeamTasksStatView(totalTasksCount, usersVotesStat);
+    }
+
+    private static Instant getOrDefault(final Long tm, final Instant defaultDtm) {
+        if (tm == null) {
+            return defaultDtm;
+        } else {
+            return Instant.ofEpochSecond(tm);
+        }
     }
 }

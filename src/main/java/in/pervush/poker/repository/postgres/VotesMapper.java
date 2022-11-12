@@ -1,5 +1,6 @@
 package in.pervush.poker.repository.postgres;
 
+import in.pervush.poker.model.votes.DBUserVoteStat;
 import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import org.apache.ibatis.annotations.Arg;
@@ -35,4 +36,33 @@ public interface VotesMapper {
             order by vote, user_uuid
             """)
     List<DBVote> getVotes(@Param("taskUuid") UUID taskUuid);
+
+    @ConstructorArgs(value = {
+            @Arg(column = "user_uuid", javaType = UUID.class),
+            @Arg(column = "votes_cnt", javaType = int.class)
+    })
+    @Select("""
+            with v as (
+                select
+                    v.user_uuid,
+                    count(v.task_uuid) as votes_cnt
+                from tasks t
+                inner join votes v on t.task_uuid = v.task_uuid
+                where t.team_uuid = #{teamUuid}
+                    and t.create_dtm between #{startDtm} and #{endDtm}
+                    and t.is_finished
+                    and not t.is_deleted
+                group by v.user_uuid
+            )
+            select
+                ut.user_uuid,
+                coalesce(v.votes_cnt, 0) as votes_cnt
+            from users_x_teams ut
+            left join v on ut.user_uuid = v.user_uuid
+            where ut.team_uuid = #{teamUuid}
+            order by votes_cnt desc
+            """)
+    List<DBUserVoteStat> getVotesStat(@Param("teamUuid") UUID teamUuid,
+                                      @Param("startDtm") Instant startDtm,
+                                      @Param("endDtm") Instant endDtm);
 }

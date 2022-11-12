@@ -12,7 +12,7 @@ import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
-import in.pervush.poker.repository.postgres.VotesMapper;
+import in.pervush.poker.repository.VotesRepository;
 import in.pervush.poker.utils.InstantUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +24,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringJUnitConfig({UsersRepository.class, TasksService.class, TasksRepository.class, TeamsRepository.class,
-        TeamsService.class})
+        TeamsService.class, VotesRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
 @Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
@@ -50,7 +52,7 @@ public class TasksServiceTests {
     private TeamsRepository teamsRepository;
 
     @Autowired
-    private VotesMapper votesMapper;
+    private VotesRepository votesRepository;
 
     private UUID userUuid;
     private UUID teamUuid;
@@ -88,7 +90,7 @@ public class TasksServiceTests {
         final var task = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI, teamUuid);
         final var voteValue = VoteValue.VALUE_8;
-        votesMapper.createVote(task.taskUuid(), userUuid, voteValue, InstantUtils.now());
+        votesRepository.createVote(task.taskUuid(), userUuid, voteValue);
         final var expected = new DBTask(
                 task.taskUuid(),
                 task.userUuid(),
@@ -191,5 +193,26 @@ public class TasksServiceTests {
 
         final var actual = tasksService.getTasks(userUuid, teamUuid, null, false);
         assertThat(actual).containsExactly(task1);
+    }
+
+    @Test
+    void getFinishedTasksCount_success() {
+        tasksService.createTask(userUuid, "Test task",
+                "http://ooglE.com", Scale.FIBONACCI, teamUuid);
+        final var task2 = tasksService.createTask(userUuid, "Test task",
+                "http://yahoO.com", Scale.FIBONACCI, teamUuid);
+        tasksService.finishTask(task2.taskUuid(), userUuid, teamUuid);
+
+        final int expected = 1;
+        final int actual = tasksService.getFinishedTasksCount(teamUuid, userUuid,
+                InstantUtils.now().minus(Duration.of(1, ChronoUnit.DAYS)), InstantUtils.now());
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void getFinishedTasksCount_notTeamMember_teamNotFoundException() {
+        assertThrows(TeamNotFoundException.class, () -> tasksService.getFinishedTasksCount(teamUuid, UUID.randomUUID(),
+                InstantUtils.now(), InstantUtils.now()));
     }
 }

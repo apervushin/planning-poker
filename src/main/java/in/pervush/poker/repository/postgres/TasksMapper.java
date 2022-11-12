@@ -146,4 +146,16 @@ public interface TasksMapper {
                     @Param("scale") Scale scale,
                     @Param("createDtm") Instant createDtm,
                     @Param("teamUuid") UUID teamUuid);
+
+    @Select("""
+            select count(*) as cnt
+            from tasks 
+            where not is_deleted
+                and is_finished 
+                and team_uuid = #{teamUuid}
+                and create_dtm between #{startDtm} and #{endDtm}
+            """)
+    int getFinishedTasksCount(@Param("teamUuid") UUID teamUuid,
+                              @Param("startDtm") Instant startDtm,
+                              @Param("endDtm") Instant endDtm);
 }
