@@ -33,6 +33,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -226,6 +227,19 @@ public class TasksServiceTests {
                 InstantUtils.now().minus(Duration.of(1, ChronoUnit.DAYS)), InstantUtils.now());
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void activateTask_success() {
+        final var task = tasksService
+                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid);
+        votesRepository.createVote(task.taskUuid(), userUuid, VoteValue.VALUE_8);
+        tasksService.finishTask(task.taskUuid(), userUuid, teamUuid);
+
+        tasksService.activateTask(task.taskUuid(), userUuid, teamUuid);
+
+        assertFalse(tasksService.getTask(task.taskUuid(), userUuid, teamUuid).finished());
+        assertThat(votesRepository.getVotes(task.taskUuid())).isEmpty();
     }
 
     @Test

@@ -8,6 +8,7 @@ import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.TasksRepository;
+import in.pervush.poker.repository.VotesRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.util.Strings;
@@ -30,6 +31,7 @@ public class TasksService {
 
     private final TasksRepository tasksRepository;
     private final TeamsService teamsService;
+    private final VotesRepository votesRepository;
 
     public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search,
                                  @Nullable final Boolean finished)
@@ -60,6 +62,17 @@ public class TasksService {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
         }
         tasksRepository.finishTask(taskUuid, teamUuid);
+    }
+
+    @Transactional
+    public void activateTask(final UUID taskUuid, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
+        teamsService.validateTeamMember(teamUuid, userUuid);
+        final var dbTask = tasksRepository.getNotDeletedTaskLock(taskUuid, teamUuid, userUuid);
+        if (!dbTask.finished()) {
+            throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
+        }
+        votesRepository.eraseVotes(taskUuid);
+        tasksRepository.activateTask(taskUuid, teamUuid);
     }
 
     public void deleteTasks(final Set<UUID> taskUuids, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {

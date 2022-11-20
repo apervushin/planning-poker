@@ -29,4 +29,8 @@ public class VotesRepository {
     public List<DBUserVoteStat> getVotesStat(final UUID teamUuid, final Instant startDtm, final Instant endDtm) {
         return mapper.getVotesStat(teamUuid, startDtm, endDtm);
     }
+
+    public void eraseVotes(final UUID taskUuid) {
+        mapper.eraseVotes(taskUuid);
+    }
 }

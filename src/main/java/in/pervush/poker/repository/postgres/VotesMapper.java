@@ -5,6 +5,7 @@ import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -65,4 +66,7 @@ public interface VotesMapper {
     List<DBUserVoteStat> getVotesStat(@Param("teamUuid") UUID teamUuid,
                                       @Param("startDtm") Instant startDtm,
                                       @Param("endDtm") Instant endDtm);
+
+    @Delete("delete from votes where task_uuid = #{taskUuid}")
+    void eraseVotes(@Param("taskUuid") UUID taskUuid);
 }

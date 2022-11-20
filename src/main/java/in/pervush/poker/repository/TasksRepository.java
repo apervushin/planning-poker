@@ -38,7 +38,14 @@ public class TasksRepository {
     }
 
     public void finishTask(final UUID taskUuid, final UUID teamUuid) throws TaskNotFoundException {
-        final boolean updated = mapper.setFinished(taskUuid, teamUuid);
+        final boolean updated = mapper.setFinished(taskUuid, teamUuid, true);
+        if (!updated) {
+            throw new TaskNotFoundException();
+        }
+    }
+
+    public void activateTask(final UUID taskUuid, final UUID teamUuid) throws TaskNotFoundException {
+        final boolean updated = mapper.setFinished(taskUuid, teamUuid, false);
         if (!updated) {
             throw new TaskNotFoundException();
         }

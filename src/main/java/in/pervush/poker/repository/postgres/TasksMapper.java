@@ -115,11 +115,12 @@ public interface TasksMapper {
 
     @Update("""
             update tasks
-            set is_finished = true
+            set is_finished = #{finished}
             where not is_deleted and team_uuid = #{teamUuid} and task_uuid = #{taskUuid}
             """)
     boolean setFinished(@Param("taskUuid") UUID taskUuid,
-                        @Param("teamUuid") UUID teamUuid);
+                        @Param("teamUuid") UUID teamUuid,
+                        @Param("finished") boolean finished);
 
     @Update("""
             <script>

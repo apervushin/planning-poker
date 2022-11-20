@@ -149,6 +149,24 @@ public class TasksController {
         tasksService.finishTask(taskUuid, user.getUserUuid(), teamUuid);
     }
 
+    @Operation(
+            summary = "Activate task",
+            description = "Reset task votes and restart voting",
+            responses = {
+                    @ApiResponse(responseCode = "201"),
+                    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "401", content = @Content()),
+                    @ApiResponse(responseCode = "404", content = @Content())
+            }
+    )
+    @PostMapping(value = "/{taskUuid}/activate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void activateTask(@PathVariable("teamUuid") final UUID teamUuid,
+                             @PathVariable("taskUuid") final UUID taskUuid,
+                             @AuthenticationPrincipal final UserDetailsImpl user) {
+        tasksService.activateTask(taskUuid, user.getUserUuid(), teamUuid);
+    }
+
     @Deprecated
     @Operation(
             summary = "Delete task",
