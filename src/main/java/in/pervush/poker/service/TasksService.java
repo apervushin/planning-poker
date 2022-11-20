@@ -2,6 +2,7 @@ package in.pervush.poker.service;
 
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
+import in.pervush.poker.exception.TaskUrlExistsException;
 import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
@@ -44,7 +45,7 @@ public class TasksService {
     }
 
     public DBTask createTask(final UUID userUuid, final String name, final String url, final Scale scale,
-                             final UUID teamUuid) {
+                             final UUID teamUuid) throws TaskUrlExistsException {
         validateTaskName(name);
         validateTaskUrl(url);
         teamsService.validateTeamMember(teamUuid, userUuid);

@@ -131,10 +131,10 @@ public class VotesServiceTests {
     void getVotesStat_success() {
         // create second task
         final var task2Uuid = tasksService
-                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid).taskUuid();
+                .createTask(userUuid, "Test task", "http://google.com/1", Scale.FIBONACCI, teamUuid).taskUuid();
         // create third task
         final var task3Uuid = tasksService
-                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid).taskUuid();
+                .createTask(userUuid, "Test task", "http://google.com/2", Scale.FIBONACCI, teamUuid).taskUuid();
 
         // create second user
         final String user2Name = "qwerty1";

@@ -82,4 +82,23 @@
             <column name="is_finished" />
         </createIndex>
     </changeSet>
+    <changeSet id="2022-11-19-uniq-task-url-per-team" author="alex">
+        <sql>
+            delete from tasks where task_uuid in (
+                select
+                    task_uuid
+                from (
+                         select
+                             task_uuid,
+                             row_number() over (partition by team_uuid, url order by create_dtm desc) as rn
+                         from tasks
+                         where not is_deleted
+                     ) t
+                where rn &lt;&gt; 1
+            )
+        </sql>
+        <sql>
+            create unique index tasks_url_ui on tasks(team_uuid, url) where not is_deleted
+        </sql>
+    </changeSet>
 </databaseChangeLog>

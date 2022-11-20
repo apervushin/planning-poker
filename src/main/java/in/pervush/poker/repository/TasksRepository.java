@@ -1,11 +1,13 @@
 package in.pervush.poker.repository;
 
 import in.pervush.poker.exception.TaskNotFoundException;
+import in.pervush.poker.exception.TaskUrlExistsException;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.postgres.TasksMapper;
 import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -52,11 +54,15 @@ public class TasksRepository {
         }
     }
 
-    public DBTask createTask(final UUID userUuid, final String name, final String url,
-                             final Scale scale, final UUID teamUuid) {
+    public DBTask createTask(final UUID userUuid, final String name, final String url, final Scale scale,
+                             final UUID teamUuid) throws TaskUrlExistsException {
         final var now = InstantUtils.now();
         final var taskUuid = UUID.randomUUID();
-        mapper.createTask(userUuid, taskUuid, name, url, scale, now, teamUuid);
+        try {
+            mapper.createTask(userUuid, taskUuid, name, url, scale, now, teamUuid);
+        } catch (DuplicateKeyException ex) {
+            throw new TaskUrlExistsException();
+        }
         return new DBTask(taskUuid, userUuid, name, url, scale, false, now, null, teamUuid);
     }
 

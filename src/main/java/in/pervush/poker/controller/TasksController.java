@@ -1,6 +1,9 @@
 package in.pervush.poker.controller;
 
+import in.pervush.poker.exception.ErrorStatusException;
+import in.pervush.poker.exception.TaskUrlExistsException;
 import in.pervush.poker.model.ErrorResponse;
+import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
 import in.pervush.poker.model.tasks.DeleteTasksRequest;
 import in.pervush.poker.model.tasks.TaskView;
@@ -112,17 +115,21 @@ public class TasksController {
     public TaskView createTask(@PathVariable("teamUuid") final UUID teamUuid,
                                @RequestBody @Valid final CreateTaskRequest request,
                                @AuthenticationPrincipal final UserDetailsImpl user) {
-        return TaskView.of(
-                tasksService.createTask(
-                        user.getUserUuid(),
-                        request.getName(),
-                        request.getUrl(),
-                        request.getScale(),
-                        teamUuid
-                ),
-                userService.getUser(user.getUserUuid()),
-                Collections.emptyList()
-        );
+        try {
+            return TaskView.of(
+                    tasksService.createTask(
+                            user.getUserUuid(),
+                            request.getName(),
+                            request.getUrl(),
+                            request.getScale(),
+                            teamUuid
+                    ),
+                    userService.getUser(user.getUserUuid()),
+                    Collections.emptyList()
+            );
+        } catch (TaskUrlExistsException ex) {
+            throw new ErrorStatusException(ErrorStatus.TASK_URL_EXISTS);
+        }
     }
 
     @Operation(

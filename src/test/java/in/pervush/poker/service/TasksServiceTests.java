@@ -4,6 +4,7 @@ import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.TestPostgresConfiguration;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
+import in.pervush.poker.exception.TaskUrlExistsException;
 import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.DBTask;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,6 +146,22 @@ public class TasksServiceTests {
     }
 
     @Test
+    void createTask_duplicateUrl_taskUrlExistsException() {
+        tasksService.createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid);
+        assertThrows(TaskUrlExistsException.class, () -> tasksService
+                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid));
+    }
+
+    @Test
+    void createTask_duplicateUrlDeletedTask_noException() {
+        final var task = tasksService
+                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid);
+        tasksService.deleteTasks(Set.of(task.taskUuid()), userUuid, teamUuid);
+        assertDoesNotThrow(() -> tasksService
+                .createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI, teamUuid));
+    }
+
+    @Test
     void createAndFinishTask_success() {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI, teamUuid);
@@ -175,9 +193,9 @@ public class TasksServiceTests {
     @Test
     void getTasks_withFilterByName_success() {
         final var expected = tasksService.createTask(userUuid, "Yahoo task",
-                "http://example.com", Scale.FIBONACCI, teamUuid);
+                "http://example.com/1", Scale.FIBONACCI, teamUuid);
         tasksService.createTask(userUuid, "Google task",
-                "http://example.com", Scale.FIBONACCI, teamUuid);
+                "http://example.com/2", Scale.FIBONACCI, teamUuid);
 
         final var actual = tasksService.getTasks(userUuid, teamUuid, "yahoO", null);
         assertThat(actual).containsExactly(expected);
