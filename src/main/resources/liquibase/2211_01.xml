@@ -84,6 +84,20 @@
     </changeSet>
     <changeSet id="2022-11-19-uniq-task-url-per-team" author="alex">
         <sql>
+            delete from votes where task_uuid in (
+                select
+                    task_uuid
+                from (
+                         select
+                             task_uuid,
+                             row_number() over (partition by team_uuid, url order by create_dtm desc) as rn
+                         from tasks
+                         where not is_deleted
+                     ) t
+                where rn &lt;&gt; 1
+            )
+        </sql>
+        <sql>
             delete from tasks where task_uuid in (
                 select
                     task_uuid
