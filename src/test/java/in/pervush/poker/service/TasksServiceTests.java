@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestPropertySource(locations = "classpath:application.yml")
 @Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
 @Transactional
+@EnableAsync
 public class TasksServiceTests {
 
     @Autowired
@@ -85,6 +87,7 @@ public class TasksServiceTests {
         final var expected = tasksService.createTask(userUuid, "Test task",
                 "http://google.com:1234/task?param=123#test", Scale.FIBONACCI, teamUuid);
         final var actual = tasksService.getTask(expected.taskUuid(), expected.userUuid(), teamUuid);
+        System.out.println("TEST");
         assertEquals(expected, actual);
     }
 

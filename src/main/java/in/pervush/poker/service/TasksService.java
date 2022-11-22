@@ -12,6 +12,7 @@ import in.pervush.poker.repository.VotesRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class TasksService {
     private final TasksRepository tasksRepository;
     private final TeamsService teamsService;
     private final VotesRepository votesRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search,
                                  @Nullable final Boolean finished)
@@ -51,7 +53,9 @@ public class TasksService {
         validateTaskName(name);
         validateTaskUrl(url);
         teamsService.validateTeamMember(teamUuid, userUuid);
-        return tasksRepository.createTask(userUuid, name, url, scale, teamUuid);
+        final var task = tasksRepository.createTask(userUuid, name, url, scale, teamUuid);
+        eventPublisher.publishEvent(task);
+        return task;
     }
 
     @Transactional

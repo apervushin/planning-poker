@@ -115,4 +115,21 @@
             create unique index tasks_url_ui on tasks(team_uuid, url) where not is_deleted
         </sql>
     </changeSet>
+
+    <changeSet id="2022-11-22-push-tokens" author="alex">
+        <createTable tableName="push_tokens">
+            <column name="user_uuid" type="UUID">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="device_uuid" type="UUID">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="token" type="varchar">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_update_dtm" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

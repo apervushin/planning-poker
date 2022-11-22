@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
@@ -18,10 +19,12 @@ import java.util.UUID;
 public class RequestHelper {
 
     public static final String SESSION_COOKIE_NAME = "SESSIONID";
+    public static final String DEVICE_UUID_HEADER_NAME = "x-device-uuid";
     private static final String SESSION_COOKIE_PATH = "/api/";
     private static final String JWT_ISSUER = "planning-poker";
     private final AuthenticationProperties authenticationProperties;
     private final HttpServletResponse response;
+    private final HttpServletRequest request;
 
     public void setAuthCookie(final UserDetailsImpl user) {
         final var cookie = new Cookie(SESSION_COOKIE_NAME, buildToken(user));
