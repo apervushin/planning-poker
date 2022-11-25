@@ -132,4 +132,10 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="2022-11-23-uniq-push-token" author="alex">
+        <createIndex tableName="push_tokens" indexName="push_tokens_token_ui" unique="true">
+            <column name="token" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

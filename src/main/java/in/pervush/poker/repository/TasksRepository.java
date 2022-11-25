@@ -3,6 +3,7 @@ package in.pervush.poker.repository;
 import in.pervush.poker.exception.TaskNotFoundException;
 import in.pervush.poker.exception.TaskUrlExistsException;
 import in.pervush.poker.model.tasks.DBTask;
+import in.pervush.poker.model.tasks.DBUserNotVotedTasksCount;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.postgres.TasksMapper;
 import in.pervush.poker.utils.InstantUtils;
@@ -13,8 +14,11 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -77,4 +81,10 @@ public class TasksRepository {
         return mapper.getFinishedTasksCount(teamUuid, startDtm, endDtm);
     }
 
+    public Map<UUID, Integer> getUsersNotVotedTasksCount(final UUID teamUuid) {
+        return mapper.getUsersNotVotedTasksCount(teamUuid).stream().collect(Collectors.toConcurrentMap(
+                DBUserNotVotedTasksCount::userUuid,
+                DBUserNotVotedTasksCount::notVotedTasksCount
+        ));
+    }
 }

@@ -5,6 +5,7 @@ import in.pervush.poker.exception.TaskNotFoundException;
 import in.pervush.poker.exception.TaskUrlExistsException;
 import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
+import in.pervush.poker.model.events.TaskCreatedEvent;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.TasksRepository;
@@ -54,7 +55,13 @@ public class TasksService {
         validateTaskUrl(url);
         teamsService.validateTeamMember(teamUuid, userUuid);
         final var task = tasksRepository.createTask(userUuid, name, url, scale, teamUuid);
-        eventPublisher.publishEvent(task);
+        eventPublisher.publishEvent(new TaskCreatedEvent(
+                task.userUuid(),
+                task.taskUuid(),
+                task.teamUuid(),
+                task.name(),
+                tasksRepository.getUsersNotVotedTasksCount(task.teamUuid())
+        ));
         return task;
     }
 

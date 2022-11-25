@@ -1,6 +1,7 @@
 package in.pervush.poker.repository.postgres;
 
 import in.pervush.poker.model.tasks.DBTask;
+import in.pervush.poker.model.tasks.DBUserNotVotedTasksCount;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.model.votes.VoteValue;
 import org.apache.ibatis.annotations.Arg;
@@ -150,13 +151,49 @@ public interface TasksMapper {
 
     @Select("""
             select count(*) as cnt
-            from tasks 
+            from tasks
             where not is_deleted
-                and is_finished 
+                and is_finished
                 and team_uuid = #{teamUuid}
                 and create_dtm between #{startDtm} and #{endDtm}
             """)
     int getFinishedTasksCount(@Param("teamUuid") UUID teamUuid,
                               @Param("startDtm") Instant startDtm,
                               @Param("endDtm") Instant endDtm);
+
+
+    @ConstructorArgs({
+            @Arg(column = "user_uuid", javaType = UUID.class),
+            @Arg(column = "not_voted_tasks_cnt", javaType = int.class)
+    })
+    @Select("""
+            with total_tasks_count as (
+                select count(*) as cnt
+                from tasks
+                where team_uuid = #{teamUuid}
+                    and not is_deleted
+                    and not is_finished
+            ),
+            users_votes_count as (
+                select
+                    user_uuid,
+                    count(*) as cnt
+                from votes
+                where task_uuid in (
+                    select task_uuid
+                    from tasks
+                    where team_uuid = #{teamUuid}
+                )
+                group by user_uuid
+            )
+            select
+                ut.user_uuid,
+                tc.cnt - coalesce(uv.cnt, 0) as not_voted_tasks_cnt
+            from users_x_teams ut
+            left join users_votes_count uv on ut.user_uuid = uv.user_uuid
+            left join total_tasks_count tc on 1=1
+            where team_uuid = #{teamUuid}
+                and membership_status in ('MEMBER', 'OWNER')
+            """)
+    List<DBUserNotVotedTasksCount> getUsersNotVotedTasksCount(@Param("teamUuid") UUID teamUuid);
 }
