@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @SpringJUnitConfig({PushNotificationsService.class, PushTokensRepository.class, UsersRepository.class,
         TeamsRepository.class})
@@ -61,6 +62,13 @@ public class PushNotificationsServiceTests {
                 .map(DBPushToken::token).toList();
 
         assertThat(tokens).containsExactly(expected);
+    }
+
+    @Test
+    void setPushToken_twiceForOneToken_success() {
+        final var token = "token1";
+        service.setPushToken(userUuid, UUID.randomUUID(), token);
+        assertDoesNotThrow(() -> service.setPushToken(userUuid, UUID.randomUUID(), token));
     }
 
     @Test
