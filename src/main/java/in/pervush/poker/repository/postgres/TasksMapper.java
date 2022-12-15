@@ -183,6 +183,8 @@ public interface TasksMapper {
                     select task_uuid
                     from tasks
                     where team_uuid = #{teamUuid}
+                        and not is_deleted
+                        and not is_finished
                 )
                 group by user_uuid
             )

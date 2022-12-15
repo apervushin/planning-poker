@@ -82,7 +82,7 @@ public class TasksRepository {
     }
 
     public Map<UUID, Integer> getUsersNotVotedTasksCount(final UUID teamUuid) {
-        return mapper.getUsersNotVotedTasksCount(teamUuid).stream().collect(Collectors.toConcurrentMap(
+        return mapper.getUsersNotVotedTasksCount(teamUuid).stream().collect(Collectors.toUnmodifiableMap(
                 DBUserNotVotedTasksCount::userUuid,
                 DBUserNotVotedTasksCount::notVotedTasksCount
         ));
