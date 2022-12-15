@@ -5,6 +5,7 @@ import in.pervush.poker.model.tasks.CreateTeamRequest;
 import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.model.teams.UserTeamView;
 import in.pervush.poker.model.user.UserDetailsImpl;
+import in.pervush.poker.repository.VotesRepository;
 import in.pervush.poker.service.TeamsService;
 import in.pervush.poker.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +41,7 @@ public class TeamsController {
 
     private final TeamsService teamsService;
     private final UserService userService;
+    private final VotesRepository votesRepository;
 
     @Operation(
             summary = "Create team",
@@ -55,7 +57,7 @@ public class TeamsController {
                                    @AuthenticationPrincipal final UserDetailsImpl user) {
         final var userUuid = user.getUserUuid();
         final var userTeam = teamsService.createTeam(userUuid, request.getTeamName());
-        return UserTeamView.of(userTeam, userService.getUser(userUuid));
+        return UserTeamView.of(userTeam, userService.getUser(userUuid), 0);
     }
 
     @Operation(
@@ -72,7 +74,10 @@ public class TeamsController {
     ) {
         final var userUuid = user.getUserUuid();
         return teamsService.getTeams(userUuid, membershipStatus).stream()
-                .map(v -> UserTeamView.of(v, userService.getUser(v.userUuid()))).toList();
+                .map(v -> UserTeamView.of(
+                        v, userService.getUser(v.userUuid()),
+                        votesRepository.countNotVotedUserTasks(v.teamUuid(), userUuid)
+                )).toList();
     }
 
     @Operation(

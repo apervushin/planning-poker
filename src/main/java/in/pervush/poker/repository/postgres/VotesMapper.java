@@ -69,4 +69,16 @@ public interface VotesMapper {
 
     @Delete("delete from votes where task_uuid = #{taskUuid}")
     void eraseVotes(@Param("taskUuid") UUID taskUuid);
+
+    @Select("""
+            select
+                count(t.task_uuid) - count(v.vote) as count
+            from tasks t
+            left join votes v on t.task_uuid = v.task_uuid and v.user_uuid = #{userUuid}
+            where not t.is_deleted
+                and not t.is_finished
+                and t.team_uuid = #{teamUuid}
+            """)
+    int countNotVotedUserTasks(@Param("teamUuid") UUID teamUuid,
+                               @Param("userUuid") UUID userUuid);
 }

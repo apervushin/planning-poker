@@ -8,6 +8,7 @@ import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.InviteTeamMemberRequest;
 import in.pervush.poker.model.teams.UserTeamView;
 import in.pervush.poker.model.user.UserDetailsImpl;
+import in.pervush.poker.repository.VotesRepository;
 import in.pervush.poker.service.TeamsService;
 import in.pervush.poker.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +43,7 @@ public class TeamMembersController {
 
     private final TeamsService teamsService;
     private final UserService userService;
+    private final VotesRepository votesRepository;
 
     @Operation(
             summary = "Get team members",
@@ -55,7 +57,11 @@ public class TeamMembersController {
     public List<UserTeamView> getTeamMembers(@PathVariable("teamUuid") final UUID teamUuid,
                                              @AuthenticationPrincipal final UserDetailsImpl user) {
         return teamsService.getTeamMembers(teamUuid, user.getUserUuid()).stream()
-                .map(v -> UserTeamView.of(v, userService.getUser(v.userUuid())))
+                .map(v -> UserTeamView.of(
+                        v,
+                        userService.getUser(v.userUuid()),
+                        votesRepository.countNotVotedUserTasks(v.teamUuid(), v.userUuid())
+                ))
                 .toList();
     }
 

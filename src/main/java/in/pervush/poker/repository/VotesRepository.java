@@ -6,6 +6,7 @@ import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.postgres.VotesMapper;
 import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -32,5 +33,9 @@ public class VotesRepository {
 
     public void eraseVotes(final UUID taskUuid) {
         mapper.eraseVotes(taskUuid);
+    }
+
+    public int countNotVotedUserTasks(UUID teamUuid, UUID userUuid) {
+        return mapper.countNotVotedUserTasks(teamUuid, userUuid);
     }
 }
