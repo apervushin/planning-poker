@@ -2,7 +2,7 @@ package in.pervush.poker.model.tasks;
 
 import lombok.Data;
 
-import javax.validation.constraints.Email;
+import jakarta.validation.constraints.Email;
 
 @Data
 public class InviteTeamMemberRequest {

@@ -1,6 +1,6 @@
 package in.pervush.poker.model.notifications.push;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 public record SetPushTokenRequest(@NotEmpty String token) {
 }

@@ -7,6 +7,7 @@ import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.utils.auth.JwtTokenFilter;
 import in.pervush.poker.utils.auth.RequestHelper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 @Import({PasswordEncoderConfiguration.class, PostgresConfiguration.class})
@@ -60,8 +60,8 @@ public class SecurityConfiguration {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
-                .authorizeRequests()
-                .antMatchers(
+                .authorizeHttpRequests()
+                .requestMatchers(
                         LoginController.PATH + "**",
                         RegistrationController.PATH + "**"
                 )
@@ -81,9 +81,9 @@ public class SecurityConfiguration {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> {
             if (Strings.isNotEmpty(apiDocsPath)) {
-                web.ignoring().antMatchers(HttpMethod.GET, apiDocsPath + "/**");
+                web.ignoring().requestMatchers(HttpMethod.GET, apiDocsPath + "/**");
                 if (Strings.isNotEmpty(swaggerUiPath)) {
-                    web.ignoring().antMatchers(HttpMethod.GET, swaggerUiPath + "/**");
+                    web.ignoring().requestMatchers(HttpMethod.GET, swaggerUiPath + "/**");
                 }
             }
         };
