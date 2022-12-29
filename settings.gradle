@@ -1,2 +1,5 @@
 rootProject.name = 'planning-poker'
+include 'main'
+include 'common'
+include 'notifications'
 

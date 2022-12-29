@@ -1,0 +1,13 @@
+dependencies {
+    implementation(project(":common"))
+    implementation(project(":notifications"))
+}
+
+bootJar {
+    enabled = true
+    mainClass = 'in.pervush.poker.Application'
+}
+
+jar {
+    enabled = false
+}
