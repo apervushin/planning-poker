@@ -3,10 +3,10 @@ package in.pervush.poker.repository.postgres;
 import in.pervush.poker.model.push.DBPushToken;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
-import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,8 +26,17 @@ public interface PushTokensMapper {
                       @Param("token") String token,
                       @Param("updateDtm") Instant updateDtm);
 
-    @Delete("delete from push_tokens where token = #{token}")
-    void deletePushToken(@Param("token") String token);
+    @Update("""
+            update push_tokens
+            set user_uuid = #{userUuid},
+                device_uuid = #{deviceUuid},
+                last_update_dtm = #{updateDtm}
+            where token = #{token}
+            """)
+    boolean updateUserUuidAndDeviceUuidByPushToken(@Param("userUuid") UUID userUuid,
+                                                   @Param("deviceUuid") UUID deviceUuid,
+                                                   @Param("token") String token,
+                                                   @Param("updateDtm") Instant updateDtm);
 
     @ConstructorArgs(value = {
             @Arg(column = "user_uuid", javaType = UUID.class),
