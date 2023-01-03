@@ -9,4 +9,5 @@
     <include file="main-2207_01.xml" relativeToChangelogFile="true" />
     <include file="main-2209_01.xml" relativeToChangelogFile="true" />
     <include file="main-2211_01.xml" relativeToChangelogFile="true" />
+    <include file="main-2212_01.xml" relativeToChangelogFile="true" />
 </databaseChangeLog>

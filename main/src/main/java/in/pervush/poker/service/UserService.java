@@ -1,12 +1,15 @@
 package in.pervush.poker.service;
 
+import in.pervush.poker.exception.EmailConfirmationCodeDoesNotExistsException;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.model.ErrorStatus;
+import in.pervush.poker.model.events.UserCreatedEvent;
 import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -25,6 +28,7 @@ public class UserService {
     private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
 
     private final UsersRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public DBUser createUser(final String email, final String password, final String name) {
         final String nameTrimmed = Strings.trimToNull(name);
@@ -34,11 +38,25 @@ public class UserService {
         validateEmail(emailLower);
         validatePassword(password);
 
-        return repository.createUser(emailLower, password, nameTrimmed);
+        final var user = repository.createUser(emailLower, password, nameTrimmed, UUID.randomUUID());
+
+        eventPublisher.publishEvent(new UserCreatedEvent(
+                user.userUuid(),
+                user.email(),
+                user.name(),
+                user.createDtm(),
+                user.emailConfirmationCode()
+        ));
+
+        return user;
     }
 
     public DBUser getUser(final UUID userUuid) {
         return repository.getUser(userUuid);
+    }
+
+    public void confirmEmail(final UUID confirmationCode) throws EmailConfirmationCodeDoesNotExistsException {
+        repository.confirmEmail(confirmationCode);
     }
 
     private static void validateUserName(final String name) {

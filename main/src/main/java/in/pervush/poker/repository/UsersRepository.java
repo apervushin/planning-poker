@@ -3,6 +3,7 @@ package in.pervush.poker.repository;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import in.pervush.poker.exception.EmailConfirmationCodeDoesNotExistsException;
 import in.pervush.poker.exception.EmailExistsException;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.DBUser;
@@ -36,23 +37,30 @@ public class UsersRepository {
                 }
             });
 
-    public DBUser createUser(final String email, final String password, final String name) {
+    public DBUser createUser(final String email, final String password, final String name,
+                             final UUID emailConfirmationCode) {
         final var userUuid = UUID.randomUUID();
         final var createDtm = InstantUtils.now();
         final var passwordEncoded = passwordEncoder.encode(password);
         try {
-            mapper.createUser(userUuid, email, passwordEncoded, name, createDtm);
-        } catch (DuplicateKeyException ex) {
+            mapper.createUser(userUuid, email, passwordEncoded, name, createDtm, emailConfirmationCode);
+        } catch (final DuplicateKeyException ex) {
             throw new EmailExistsException();
         }
-        return new DBUser(userUuid, email, passwordEncoded, name, createDtm);
+        return new DBUser(userUuid, email, passwordEncoded, name, createDtm, emailConfirmationCode);
     }
 
     public DBUser getUser(final UUID userUuid) throws UserNotFoundException {
         try {
             return usersCache.get(userUuid).orElseThrow(UserNotFoundException::new);
-        } catch (ExecutionException e) {
+        } catch (final ExecutionException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void confirmEmail(final UUID emailConfirmationCode) throws EmailConfirmationCodeDoesNotExistsException {
+        if (!mapper.confirmEmail(emailConfirmationCode)) {
+            throw new EmailConfirmationCodeDoesNotExistsException();
         }
     }
 

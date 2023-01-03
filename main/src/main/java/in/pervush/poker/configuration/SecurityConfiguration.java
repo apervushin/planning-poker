@@ -2,6 +2,7 @@ package in.pervush.poker.configuration;
 
 import in.pervush.poker.controller.LoginController;
 import in.pervush.poker.controller.RegistrationController;
+import in.pervush.poker.controller.UserController;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.repository.UsersRepository;
@@ -63,7 +64,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers(
                         LoginController.PATH + "**",
-                        RegistrationController.PATH + "**"
+                        RegistrationController.PATH + "**",
+                        UserController.CONFIRM_EMAIL_PATH + "**"
                 )
                 .permitAll()
 

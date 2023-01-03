@@ -2,6 +2,7 @@ package in.pervush.poker.service;
 
 import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
+import in.pervush.poker.exception.EmailConfirmationCodeDoesNotExistsException;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.repository.UsersRepository;
@@ -14,6 +15,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -72,5 +74,19 @@ public class UserServiceTests {
                 RandomStringUtils.random(UserService.USER_NAME_NAME_MAX_LENGTH + 1)
         ));
         assertEquals(ErrorStatus.INVALID_USER_NAME, ex.getStatus());
+    }
+
+    @Test
+    void confirmEmail_success() {
+        final var user = service.createUser("test@example.com", "Passw0rd!","Test User");
+        assertDoesNotThrow(() -> service.confirmEmail(user.emailConfirmationCode()));
+    }
+
+    @Test
+    void confirmEmailTwice_EmailConfirmationCodeDoesNotExistsException() {
+        final var user = service.createUser("test@example.com", "Passw0rd!","Test User");
+        assertDoesNotThrow(() -> service.confirmEmail(user.emailConfirmationCode()));
+        assertThrows(EmailConfirmationCodeDoesNotExistsException.class,
+                () -> service.confirmEmail(user.emailConfirmationCode()));
     }
 }

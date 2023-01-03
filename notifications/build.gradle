@@ -1,6 +1,7 @@
 dependencies {
     implementation(project(":common"))
-    implementation group: 'com.eatthepath', name: 'pushy', version: '0.15.1'
+    implementation(group: 'com.eatthepath', name: 'pushy', version: '0.15.1')
+    implementation(group: 'com.sendinblue', name: 'sib-api-v3-sdk', version: '6.0.0')
 }
 
 bootJar {

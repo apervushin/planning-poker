@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="main-2211_01.xml">
+    <changeSet id="2022-12-31-add-email_confirmation_code" author="alex">
+        <addColumn tableName="users">
+            <column name="email_confirmation_code" type="UUID" />
+            <column name="email_confirmed" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <update tableName="users">
+            <column name="email_confirmation_code" valueComputed="gen_random_uuid()" />
+        </update>
+        <addNotNullConstraint tableName="users" columnName="email_confirmation_code" />
+        <addUniqueConstraint tableName="users" columnNames="email_confirmation_code" />
+    </changeSet>
+    <changeSet id="2023-01-04-nullable-email_confirmation_code" author="alex">
+        <dropNotNullConstraint tableName="users" columnName="email_confirmation_code" />
+    </changeSet>
+</databaseChangeLog>
