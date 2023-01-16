@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
         paramName = RequestHelper.SESSION_COOKIE_NAME
 )
 @OpenAPIDefinition(
-        servers = {@Server(url = "https://poker.pervush.in/"), @Server(url = "http://localhost:8080/")},
+        servers = {@Server(url = "https://estimate.pervush.in/"), @Server(url = "http://localhost:8080/")},
         info = @Info(title = "Planing poker API", contact = @Contact(url = "https://github.com/apervushin/planning-poker"))
 
 )

@@ -50,7 +50,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        final var userDetails = new UserDetailsImpl(user.email(), user.passwordEncoded(), user.userUuid());
+        final var userDetails = new UserDetailsImpl(user.email(), user.userUuid());
 
         final var authToken = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities()

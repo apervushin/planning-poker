@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import in.pervush.poker.configuration.AuthenticationProperties;
 import in.pervush.poker.exception.InvalidJwtTokenException;
-import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,8 @@ public class RequestHelper {
     private final AuthenticationProperties authenticationProperties;
     private final HttpServletResponse response;
 
-    public void setAuthCookie(final UserDetailsImpl user) {
-        final var cookie = new Cookie(SESSION_COOKIE_NAME, buildToken(user));
+    public void setAuthCookie(final UUID userUuid) {
+        final var cookie = new Cookie(SESSION_COOKIE_NAME, buildToken(userUuid));
         cookie.setSecure(authenticationProperties.getCookie().isSsl());
         cookie.setHttpOnly(true);
         cookie.setMaxAge((int)authenticationProperties.getCookie().getTtl().toSeconds());
@@ -44,13 +43,13 @@ public class RequestHelper {
         }
     }
 
-    private String buildToken(final UserDetailsImpl user) {
+    private String buildToken(final UUID userUuid) {
         final var now = InstantUtils.now();
         return JWT.create()
                 .withIssuer(JWT_ISSUER)
                 .withIssuedAt(now)
                 .withExpiresAt(now.plus(authenticationProperties.getCookie().getTtl()))
-                .withSubject(user.getUserUuid().toString())
+                .withSubject(userUuid.toString())
                 .sign(Algorithm.HMAC512(authenticationProperties.getJwtSecret()));
     }
 }

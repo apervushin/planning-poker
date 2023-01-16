@@ -3,7 +3,6 @@ package in.pervush.poker.repository;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import in.pervush.poker.exception.EmailConfirmationCodeDoesNotExistsException;
 import in.pervush.poker.exception.EmailExistsException;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.DBUser;
@@ -37,17 +36,21 @@ public class UsersRepository {
                 }
             });
 
-    public DBUser createUser(final String email, final String password, final String name,
-                             final UUID emailConfirmationCode) {
+    public DBUser createUser(final String email, final String name) throws EmailExistsException {
+        return createUser(email, null, name);
+    }
+
+    @Deprecated
+    public DBUser createUser(final String email, final String password, final String name) throws EmailExistsException {
         final var userUuid = UUID.randomUUID();
         final var createDtm = InstantUtils.now();
-        final var passwordEncoded = passwordEncoder.encode(password);
+        final var passwordEncoded = password == null ? null : passwordEncoder.encode(password);
         try {
-            mapper.createUser(userUuid, email, passwordEncoded, name, createDtm, emailConfirmationCode);
+            mapper.createUser(userUuid, email, passwordEncoded, name, createDtm);
         } catch (final DuplicateKeyException ex) {
             throw new EmailExistsException();
         }
-        return new DBUser(userUuid, email, passwordEncoded, name, createDtm, emailConfirmationCode);
+        return new DBUser(userUuid, email, passwordEncoded, name, createDtm);
     }
 
     public DBUser getUser(final UUID userUuid) throws UserNotFoundException {
@@ -55,12 +58,6 @@ public class UsersRepository {
             return usersCache.get(userUuid).orElseThrow(UserNotFoundException::new);
         } catch (final ExecutionException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public void confirmEmail(final UUID emailConfirmationCode) throws EmailConfirmationCodeDoesNotExistsException {
-        if (!mapper.confirmEmail(emailConfirmationCode)) {
-            throw new EmailConfirmationCodeDoesNotExistsException();
         }
     }
 

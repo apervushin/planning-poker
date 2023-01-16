@@ -65,7 +65,7 @@ public class VotesServiceTests {
 
     @BeforeEach
     void initUserAndTask() {
-        usersMapper.createUser(userUuid, USER_EMAIL, USER_PASSWORD, USER_NAME, InstantUtils.now(), UUID.randomUUID());
+        usersMapper.createUser(userUuid, USER_EMAIL, USER_PASSWORD, USER_NAME, InstantUtils.now());
         this.teamUuid = teamsRepository.createTeam(userUuid, "Test team").teamUuid();
         this.taskUuid = tasksService.createTask(userUuid, "Test task", "http://google.com", Scale.FIBONACCI,
                 teamUuid).taskUuid();
@@ -92,13 +92,13 @@ public class VotesServiceTests {
         // create second user
         final String user2Name = "qwerty1";
         final UUID user2Uuid = UUID.fromString("03356451-decf-44ba-8eaa-3c320a946001");
-        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, InstantUtils.now(), UUID.randomUUID());
+        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, InstantUtils.now());
         teamsRepository.addTeamMember(teamUuid, user2Uuid, MembershipStatus.MEMBER);
 
         // create third user
         final String user3Name = "qwerty2";
         final UUID user3Uuid = UUID.fromString("3cb4a61d-ea90-485b-b43e-c8d51f66282d");
-        usersMapper.createUser(user3Uuid, "test2@example.com", USER_PASSWORD, user3Name, InstantUtils.now(), UUID.randomUUID());
+        usersMapper.createUser(user3Uuid, "test2@example.com", USER_PASSWORD, user3Name, InstantUtils.now());
         teamsRepository.addTeamMember(teamUuid, user3Uuid, MembershipStatus.MEMBER);
 
         // create votes
@@ -138,7 +138,7 @@ public class VotesServiceTests {
         // create second user
         final String user2Name = "qwerty1";
         final UUID user2Uuid = UUID.randomUUID();
-        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, InstantUtils.now(), UUID.randomUUID());
+        usersMapper.createUser(user2Uuid, "test1@example.com", USER_PASSWORD, user2Name, InstantUtils.now());
         teamsRepository.addTeamMember(teamUuid, user2Uuid, MembershipStatus.MEMBER);
 
         // create votes for tasks 1,2,3

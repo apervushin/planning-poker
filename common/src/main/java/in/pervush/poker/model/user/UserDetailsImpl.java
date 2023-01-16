@@ -12,7 +12,6 @@ import java.util.UUID;
 public class UserDetailsImpl implements UserDetails {
 
     String email;
-    String password;
     UUID userUuid;
 
     @Override
@@ -22,7 +21,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return null;
     }
 
     @Override

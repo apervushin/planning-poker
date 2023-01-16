@@ -20,4 +20,9 @@
     <changeSet id="2023-01-04-nullable-email_confirmation_code" author="alex">
         <dropNotNullConstraint tableName="users" columnName="email_confirmation_code" />
     </changeSet>
+    <changeSet id="2023-01-04-nullable-password-and-drop-email_*-columns" author="alex">
+        <dropNotNullConstraint tableName="users" columnName="password_encoded" />
+        <dropColumn tableName="users" columnName="email_confirmation_code" />
+        <dropColumn tableName="users" columnName="email_confirmed" />
+    </changeSet>
 </databaseChangeLog>

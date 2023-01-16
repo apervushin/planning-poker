@@ -2,9 +2,13 @@ package in.pervush.poker.controller;
 
 import in.pervush.poker.exception.EmailExistsException;
 import in.pervush.poker.exception.ErrorStatusException;
+import in.pervush.poker.exception.InvalidEmailException;
+import in.pervush.poker.exception.InvalidUserNameException;
+import in.pervush.poker.exception.TooWeakPasswordException;
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.registration.RegisterRequest;
+import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.utils.auth.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,15 +31,16 @@ import jakarta.validation.Valid;
 @RequestMapping(value = RegistrationController.PATH)
 @Tag(name="Registration")
 @Validated
+@Deprecated
 public class RegistrationController extends AuthenticationController {
 
     public static final String PATH = "/api/v1/registration";
     private final UserService userService;
 
 
-    public RegistrationController(final AuthenticationManager authenticationManager, final RequestHelper requestHelper,
+    public RegistrationController(final UsersRepository usersRepository, final RequestHelper requestHelper,
                                   final UserService userService) {
-        super(authenticationManager, requestHelper);
+        super(usersRepository, requestHelper);
         this.userService = userService;
     }
 
@@ -47,12 +52,19 @@ public class RegistrationController extends AuthenticationController {
             }
     )
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Deprecated
     public ResponseEntity<Void> register(@RequestBody @Valid final RegisterRequest request) {
         try {
             userService.createUser(request.email(), request.password(), request.name());
             return login(request.email(), request.password());
-        } catch (EmailExistsException ex) {
+        } catch (final EmailExistsException ex) {
             throw new ErrorStatusException(ErrorStatus.USER_EMAIL_EXISTS);
+        } catch (final InvalidEmailException ex) {
+            throw new ErrorStatusException(ErrorStatus.INVALID_USER_EMAIL);
+        } catch (final InvalidUserNameException ex) {
+            throw new ErrorStatusException(ErrorStatus.INVALID_USER_NAME);
+        } catch (final TooWeakPasswordException ex) {
+            throw new ErrorStatusException(ErrorStatus.TOO_WEAK_USER_PASSWORD);
         }
     }
 }

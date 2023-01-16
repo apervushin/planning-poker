@@ -64,7 +64,7 @@ public class TasksServiceTests {
 
     @BeforeEach
     void init() {
-        userUuid = usersRepository.createUser("text@example.com", "abc", "Test user", UUID.randomUUID())
+        userUuid = usersRepository.createUser("text@example.com", "abc", "Test user")
                 .userUuid();
         teamUuid = teamsRepository.createTeam(userUuid, "Test team").teamUuid();
 

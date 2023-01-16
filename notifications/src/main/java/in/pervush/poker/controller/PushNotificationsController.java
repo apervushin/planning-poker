@@ -3,7 +3,7 @@ package in.pervush.poker.controller;
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.push.SetPushTokenRequest;
 import in.pervush.poker.model.user.UserDetailsImpl;
-import in.pervush.poker.service.PushNotificationsService;
+import in.pervush.poker.service.push.PushNotificationsService;
 import in.pervush.poker.utils.auth.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

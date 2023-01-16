@@ -1,4 +1,4 @@
-package in.pervush.poker.service;
+package in.pervush.poker.service.push;
 
 import com.eatthepath.pushy.apns.ApnsClient;
 import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder;

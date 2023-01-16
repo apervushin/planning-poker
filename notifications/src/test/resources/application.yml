@@ -1,1 +1,4 @@
 liquibase.change_log: classpath:liquibase/notifications-changelog-master.xml
+smtp.host: localhost
+smtp.port: 1025
+smtp.from: noreply@estimate.pervush.in

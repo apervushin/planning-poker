@@ -3,6 +3,8 @@ package in.pervush.poker.service;
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
 import in.pervush.poker.model.push.DBPushToken;
 import in.pervush.poker.repository.PushTokensRepository;
+import in.pervush.poker.service.push.ApnsService;
+import in.pervush.poker.service.push.PushNotificationsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;

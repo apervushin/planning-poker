@@ -2,9 +2,6 @@ package in.pervush.poker.configuration;
 
 import in.pervush.poker.controller.LoginController;
 import in.pervush.poker.controller.RegistrationController;
-import in.pervush.poker.controller.UserController;
-import in.pervush.poker.exception.UserNotFoundException;
-import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.utils.auth.JwtTokenFilter;
 import in.pervush.poker.utils.auth.RequestHelper;
@@ -16,15 +13,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.authentication.AuthenticationManagerBeanDefinitionParser;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -63,9 +56,9 @@ public class SecurityConfiguration {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers(
+                        LoginController.PATH + "/**",
                         LoginController.PATH + "**",
-                        RegistrationController.PATH + "**",
-                        UserController.CONFIRM_EMAIL_PATH + "**"
+                        RegistrationController.PATH + "**"
                 )
                 .permitAll()
 
@@ -92,25 +85,9 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(final PasswordEncoder passwordEncoder,
-                                                            final UsersRepository usersRepository) {
-        final DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    public AuthenticationManagerBeanDefinitionParser.NullAuthenticationProvider authenticationProvider() {
+        return new AuthenticationManagerBeanDefinitionParser.NullAuthenticationProvider();
 
-        authProvider.setUserDetailsService(username -> {
-            try {
-                final var user = usersRepository.getUser(username);
-                return new UserDetailsImpl(user.email(), user.passwordEncoded(), user.userUuid());
-            } catch (UserNotFoundException ex) {
-                throw new UsernameNotFoundException("");
-            }
-        });
-        authProvider.setPasswordEncoder(passwordEncoder);
-
-        return authProvider;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration) throws Exception {
-        return authConfiguration.getAuthenticationManager();
-    }
 }
