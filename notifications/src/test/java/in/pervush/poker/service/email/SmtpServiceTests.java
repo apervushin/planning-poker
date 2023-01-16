@@ -1,4 +1,4 @@
-package in.pervush.poker.service;
+package in.pervush.poker.service.email;
 
 import in.pervush.poker.configuration.SimpleJavaMailConfiguration;
 import in.pervush.poker.service.email.SmtpService;

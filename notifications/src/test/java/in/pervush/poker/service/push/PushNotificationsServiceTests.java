@@ -1,4 +1,4 @@
-package in.pervush.poker.service;
+package in.pervush.poker.service.push;
 
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
 import in.pervush.poker.model.push.DBPushToken;

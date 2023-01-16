@@ -7,7 +7,7 @@ plugins {
 subprojects {
 
     group = 'in.pervush'
-    version = '3.2.0'
+    version = '3.2.1'
 
     sourceCompatibility = JavaVersion.VERSION_19
     targetCompatibility = JavaVersion.VERSION_19

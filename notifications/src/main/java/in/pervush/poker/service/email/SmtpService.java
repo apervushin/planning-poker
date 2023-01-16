@@ -9,16 +9,20 @@ import org.springframework.stereotype.Service;
 public class SmtpService {
 
     private final Mailer mailer;
-    private final String from;
+    private final String fromEmail;
+    private final String fromName;
 
-    public SmtpService(Mailer mailer, @Value("${smtp.from}") String from) {
+    public SmtpService(Mailer mailer,
+                       @Value("${smtp.from.email}") String fromEmail,
+                       @Value("${smtp.from.name}") String fromName) {
         this.mailer = mailer;
-        this.from = from;
+        this.fromEmail = fromEmail;
+        this.fromName = fromName;
     }
 
     public void sendEmail(final String email, final String name, final String subject, final String body) {
         final var payload = EmailBuilder.startingBlank()
-                .from(from)
+                .from(fromName, fromEmail)
                 .to(name, email)
                 .withSubject(subject)
                 .withPlainText(body)
