@@ -23,13 +23,15 @@ public class RequestHelper {
     private final AuthenticationProperties authenticationProperties;
     private final HttpServletResponse response;
 
-    public void setAuthCookie(final UUID userUuid) {
-        final var cookie = new Cookie(SESSION_COOKIE_NAME, buildToken(userUuid));
+    public String setAuthCookie(final UUID userUuid) {
+        final var accessToken = buildToken(userUuid);
+        final var cookie = new Cookie(SESSION_COOKIE_NAME, accessToken);
         cookie.setSecure(authenticationProperties.getCookie().isSsl());
         cookie.setHttpOnly(true);
         cookie.setMaxAge((int)authenticationProperties.getCookie().getTtl().toSeconds());
         cookie.setPath(SESSION_COOKIE_PATH);
         response.addCookie(cookie);
+        return accessToken;
     }
 
     UUID getUserUuid(final String token) throws InvalidJwtTokenException {
@@ -38,7 +40,7 @@ public class RequestHelper {
                     .build();
             final var verify = require.verify(token);
             return UUID.fromString(verify.getSubject());
-        } catch (Exception ex) {
+        } catch (final RuntimeException ex) {
             throw new InvalidJwtTokenException(token, ex);
         }
     }

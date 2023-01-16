@@ -6,6 +6,7 @@ import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.model.user.UserDetailsImpl;
 import in.pervush.poker.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
+    public static final String AUTH_HEADER_NAME = "Authorization";
     private final UsersRepository usersRepository;
     private final RequestHelper requestHelper;
 
@@ -29,15 +31,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
         final var cookie = WebUtils.getCookie(request, RequestHelper.SESSION_COOKIE_NAME);
-        if (cookie == null) {
-            setUnauthorized(request, response, filterChain);
-            return;
-        }
+        final var cookieToken = cookie == null ? null : cookie.getValue();
+        final var headerToken = request.getHeader(AUTH_HEADER_NAME);
 
         final UUID userUuid;
         try {
-            userUuid = requestHelper.getUserUuid(cookie.getValue());
-        } catch (InvalidJwtTokenException e) {
+            userUuid = requestHelper.getUserUuid(ObjectUtils.firstNonNull(headerToken, cookieToken));
+        } catch (final InvalidJwtTokenException e) {
             setUnauthorized(request, response, filterChain);
             return;
         }
@@ -45,7 +45,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         final DBUser user;
         try {
             user = usersRepository.getUser(userUuid);
-        } catch (UserNotFoundException ex) {
+        } catch (final UserNotFoundException ex) {
             setUnauthorized(request, response, filterChain);
             return;
         }

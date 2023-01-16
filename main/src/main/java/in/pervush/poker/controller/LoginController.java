@@ -14,6 +14,7 @@ import in.pervush.poker.model.login.LoginRequest;
 import in.pervush.poker.model.login.LoginStep2Request;
 import in.pervush.poker.model.login.LoginStep2ResponseView;
 import in.pervush.poker.model.login.LoginStep3Request;
+import in.pervush.poker.model.login.LoginStep3ResponseView;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.utils.auth.RequestHelper;
@@ -25,7 +26,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -104,9 +104,13 @@ public class LoginController extends AuthenticationController {
                                         @RequestHeader(RequestHelper.DEVICE_UUID_HEADER_NAME) @Valid UUID deviceUuid) {
         try {
             final var user = userService.loginStep2(request.confirmationCode(), deviceUuid);
-            user.ifPresent(dbUser -> requestHelper.setAuthCookie(dbUser.userUuid()));
-            return new LoginStep2ResponseView(user.isPresent() ? LoginStep2ResponseView.LoginStep1Status.EXISTING_USER
-                    : LoginStep2ResponseView.LoginStep1Status.NEW_USER);
+            return user.map(dbUser -> new LoginStep2ResponseView(
+                    LoginStep2ResponseView.LoginStep1Status.EXISTING_USER,
+                    requestHelper.setAuthCookie(dbUser.userUuid())
+            )).orElseGet(() -> new LoginStep2ResponseView(
+                    LoginStep2ResponseView.LoginStep1Status.NEW_USER,
+                    null
+            ));
         } catch (final InvalidStepException ex) {
             throw new ErrorStatusException(ErrorStatus.INVALID_STEP);
         } catch (final TooManyConfirmationAttemptsException ex) {
@@ -127,11 +131,11 @@ public class LoginController extends AuthenticationController {
     )
     @PostMapping(value = "/step3", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public void step3(@RequestBody @Valid final LoginStep3Request request,
-                      @RequestHeader(RequestHelper.DEVICE_UUID_HEADER_NAME) @Valid UUID deviceUuid) {
+    public LoginStep3ResponseView step3(@RequestBody @Valid final LoginStep3Request request,
+                                        @RequestHeader(RequestHelper.DEVICE_UUID_HEADER_NAME) @Valid UUID deviceUuid) {
         try {
             final var user = userService.loginStep3(request.name(), deviceUuid);
-            requestHelper.setAuthCookie(user.userUuid());
+            return new LoginStep3ResponseView(requestHelper.setAuthCookie(user.userUuid()));
         } catch (final InvalidStepException ex) {
             throw new ErrorStatusException(ErrorStatus.INVALID_STEP);
         } catch (final BadCredentialsException ex) {

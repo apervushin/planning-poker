@@ -1,5 +1,6 @@
 package in.pervush.poker;
 
+import in.pervush.poker.utils.auth.JwtTokenFilter;
 import in.pervush.poker.utils.auth.RequestHelper;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
@@ -16,8 +17,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SecurityScheme(
         name = "Authorization",
         type = SecuritySchemeType.APIKEY,
-        in = SecuritySchemeIn.COOKIE,
-        paramName = RequestHelper.SESSION_COOKIE_NAME
+        in = SecuritySchemeIn.HEADER,
+        paramName = JwtTokenFilter.AUTH_HEADER_NAME
 )
 @OpenAPIDefinition(
         servers = {@Server(url = "https://estimate.pervush.in/"), @Server(url = "http://localhost:8080/")},
