@@ -38,6 +38,7 @@ public class PushNotificationsService {
             }
             apnsService.sendPush(
                     token.token(),
+                    event.teamName(),
                     event.taskName(),
                     event.teamUsersNotVotedTasksCount().getOrDefault(token.userUuid(), 0),
                     String.format(TASK_CREATED_ROUTE_TEMPLATE, event.teamUuid().toString(), event.taskUuid().toString())

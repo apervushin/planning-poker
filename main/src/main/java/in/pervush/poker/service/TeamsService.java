@@ -44,7 +44,7 @@ public class TeamsService {
     }
 
     public List<DBUserTeam> getTeamMembers(final UUID teamUuid, final UUID userUuid) {
-        validateTeamMember(teamUuid, userUuid);
+        validateTeamMemberAndGetTeam(teamUuid, userUuid);
         return teamsRepository.getTeamMembers(teamUuid);
     }
 
@@ -65,11 +65,14 @@ public class TeamsService {
         teamsRepository.deleteTeamMember(teamUuid, deletingUserUuid);
     }
 
-    public void validateTeamMember(final UUID teamUuid, final UUID userUuid) throws TeamNotFoundException {
+    public DBUserTeam validateTeamMemberAndGetTeam(final UUID teamUuid, final UUID userUuid)
+            throws TeamNotFoundException {
+
         final var team = teamsRepository.getTeam(teamUuid, userUuid);
         if (team.membershipStatus() != MembershipStatus.MEMBER && team.membershipStatus() != MembershipStatus.OWNER) {
             throw new TeamNotFoundException();
         }
+        return team;
     }
 
     private void validateTeamOwnerOrUserUuidsEquals(final UUID teamUuid, final UUID userUuid,

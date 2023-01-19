@@ -23,10 +23,11 @@ public class ApnsService {
         this.bundle = properties.getApns().getBundle();
     }
 
-    public void sendPush(final String token, final String message, final int badgeCount,
+    public void sendPush(final String token, final String title, final String message, final int badgeCount,
                          @Nullable final String route) {
         log.info("Send push. Token: {}, message: {}, badgeCount: {}", token, message, badgeCount);
         final var payload = new SimpleApnsPayloadBuilder()
+                .setAlertTitle(title)
                 .setAlertBody(message)
                 .setBadgeNumber(badgeCount);
         if (!StringUtil.isEmpty(route)) {

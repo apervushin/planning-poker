@@ -29,7 +29,7 @@ public class VotesService {
 
 
     public void createVote(final UUID taskUuid, final UUID teamUuid, final UUID userUuid, final VoteValue voteValue) {
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, teamUuid, userUuid);
 
         if (dbTask.scale() != voteValue.getScale()) {
@@ -43,7 +43,7 @@ public class VotesService {
     }
 
     public List<DBVote> getVotes(final UUID taskUuid, final UUID teamUuid, final UUID requestingUserUuid) {
-        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, requestingUserUuid);
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, teamUuid, requestingUserUuid);
         if (!dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
@@ -52,14 +52,14 @@ public class VotesService {
     }
 
     public List<UUID> getVotedUserUuids(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid) {
-        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, requestingUserUuid);
         tasksRepository.getNotDeletedTask(taskUuid, teamUuid, requestingUserUuid);
         return votesRepository.getVotes(taskUuid).stream().map(DBVote::userUuid).collect(Collectors.toList());
     }
 
     public List<DBUserVoteStat> getVotesStat(final UUID teamUuid, final UUID requestingUserUuid, final Instant startDtm,
                                              final Instant endDtm) throws TeamNotFoundException {
-        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, requestingUserUuid);
         return votesRepository.getVotesStat(teamUuid, startDtm, endDtm);
     }
 

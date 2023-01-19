@@ -8,6 +8,7 @@ import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.events.TaskCreatedEvent;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
+import in.pervush.poker.model.teams.DBUserTeam;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.VotesRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,13 +40,13 @@ public class TasksService {
     public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search,
                                  @Nullable final Boolean finished)
             throws TeamNotFoundException {
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         return tasksRepository.getNotDeletedTasks(teamUuid, userUuid, search, finished);
     }
 
     public DBTask getTask(final UUID taskUuid, final UUID requestingUserUuid, final UUID teamUuid)
             throws TaskNotFoundException {
-        teamsService.validateTeamMember(teamUuid, requestingUserUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, requestingUserUuid);
         return tasksRepository.getNotDeletedTask(taskUuid, teamUuid, requestingUserUuid);
     }
 
@@ -53,12 +54,13 @@ public class TasksService {
                              final UUID teamUuid) throws TaskUrlExistsException {
         validateTaskName(name);
         validateTaskUrl(url);
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        final var team = teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         final var task = tasksRepository.createTask(userUuid, name, url, scale, teamUuid);
         eventPublisher.publishEvent(new TaskCreatedEvent(
                 task.userUuid(),
                 task.taskUuid(),
                 task.teamUuid(),
+                team.teamName(),
                 task.name(),
                 tasksRepository.getUsersNotVotedTasksCount(task.teamUuid())
         ));
@@ -67,7 +69,7 @@ public class TasksService {
 
     @Transactional
     public void finishTask(final UUID taskUuid, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         final var dbTask = tasksRepository.getNotDeletedTaskLock(taskUuid, teamUuid, userUuid);
         if (dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
@@ -77,7 +79,7 @@ public class TasksService {
 
     @Transactional
     public void activateTask(final UUID taskUuid, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         final var dbTask = tasksRepository.getNotDeletedTaskLock(taskUuid, teamUuid, userUuid);
         if (!dbTask.finished()) {
             throw new ErrorStatusException(ErrorStatus.INVALID_TASK_STATUS);
@@ -87,13 +89,13 @@ public class TasksService {
     }
 
     public void deleteTasks(final Set<UUID> taskUuids, final UUID userUuid, final UUID teamUuid) throws TaskNotFoundException {
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         tasksRepository.deleteTasks(taskUuids, teamUuid);
     }
 
     public int getFinishedTasksCount(final UUID teamUuid, final UUID userUuid, final Instant startDtm,
                                      final Instant endDtm) throws TeamNotFoundException {
-        teamsService.validateTeamMember(teamUuid, userUuid);
+        teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         return tasksRepository.getFinishedTasksCount(teamUuid, startDtm, endDtm);
     }
 
