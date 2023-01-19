@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -19,6 +21,7 @@ public class PushNotificationsService {
     private final PushTokensRepository pushTokensRepository;
     private final ApnsService apnsService;
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void setPushToken(final UUID userUuid, final UUID deviceUuid, final String token) {
         pushTokensRepository.setPushToken(userUuid, deviceUuid, token);
     }

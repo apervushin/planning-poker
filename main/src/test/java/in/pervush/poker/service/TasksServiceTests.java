@@ -1,6 +1,5 @@
 package in.pervush.poker.service;
 
-import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskNotFoundException;
@@ -42,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         TeamsService.class, VotesRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
-@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
+@Import({TestPostgresConfiguration.class})
 @Transactional
 @EnableAsync
 public class TasksServiceTests {
@@ -64,7 +63,7 @@ public class TasksServiceTests {
 
     @BeforeEach
     void init() {
-        userUuid = usersRepository.createUser("text@example.com", "abc", "Test user")
+        userUuid = usersRepository.createUser("text@example.com", "Test user")
                 .userUuid();
         teamUuid = teamsRepository.createTeam(userUuid, "Test team").teamUuid();
 

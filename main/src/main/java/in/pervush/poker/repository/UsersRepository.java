@@ -10,7 +10,6 @@ import in.pervush.poker.repository.postgres.UsersMapper;
 import in.pervush.poker.utils.InstantUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
@@ -24,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 public class UsersRepository {
 
     private final UsersMapper mapper;
-    private final PasswordEncoder passwordEncoder;
 
     private final LoadingCache<UUID, Optional<DBUser>> usersCache = CacheBuilder.newBuilder()
             .maximumSize(100)
@@ -37,20 +35,14 @@ public class UsersRepository {
             });
 
     public DBUser createUser(final String email, final String name) throws EmailExistsException {
-        return createUser(email, null, name);
-    }
-
-    @Deprecated
-    public DBUser createUser(final String email, final String password, final String name) throws EmailExistsException {
         final var userUuid = UUID.randomUUID();
         final var createDtm = InstantUtils.now();
-        final var passwordEncoded = password == null ? null : passwordEncoder.encode(password);
         try {
-            mapper.createUser(userUuid, email, passwordEncoded, name, createDtm);
+            mapper.createUser(userUuid, email, name, createDtm);
         } catch (final DuplicateKeyException ex) {
             throw new EmailExistsException();
         }
-        return new DBUser(userUuid, email, passwordEncoded, name, createDtm);
+        return new DBUser(userUuid, email, name, createDtm);
     }
 
     public DBUser getUser(final UUID userUuid) throws UserNotFoundException {
@@ -65,11 +57,4 @@ public class UsersRepository {
         return mapper.getUserByEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
-    public DBUser getUser(final String email, final String password) throws UserNotFoundException {
-        final var dbUser = mapper.getUserByEmail(email).orElseThrow(UserNotFoundException::new);
-        if (!passwordEncoder.matches(password, dbUser.passwordEncoded())) {
-            throw new UserNotFoundException();
-        }
-        return dbUser;
-    }
 }

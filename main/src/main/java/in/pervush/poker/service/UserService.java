@@ -8,7 +8,6 @@ import in.pervush.poker.exception.InvalidEmailException;
 import in.pervush.poker.exception.InvalidStepException;
 import in.pervush.poker.exception.InvalidUserNameException;
 import in.pervush.poker.exception.TooManyConfirmationAttemptsException;
-import in.pervush.poker.exception.TooWeakPasswordException;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.events.ConfirmationCodeRequestedEvent;
 import in.pervush.poker.model.events.UserCreatedEvent;
@@ -28,19 +27,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     public static final int USER_NAME_NAME_MAX_LENGTH = 50;
-    public static final int MIN_PASSWORD_LENGTH = 8;
     public static final int MAX_CONFIRMATION_ATTEMPTS = 3;
     private static final int USER_EMAIL_MAX_LENGTH = 50;
-
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-            "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–{}:;',?/*~$^+=<>]).{" + MIN_PASSWORD_LENGTH + ",30}$");
     private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
 
     private final UsersRepository repository;
@@ -48,29 +42,6 @@ public class UserService {
 
     private final Cache<UUID, LoginState> loginAttemptsCache = CacheBuilder.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(15)).build();
-
-    @Deprecated
-    public DBUser createUser(final String email, final String password, final String name)
-            throws InvalidEmailException, InvalidUserNameException, TooWeakPasswordException, EmailExistsException {
-
-        final String nameTrimmed = Strings.trimToNull(name);
-        final String emailLower = Strings.toRootLowerCase(email);
-
-        validateUserName(nameTrimmed);
-        validateEmail(emailLower);
-        validatePassword(password);
-
-        final var user = repository.createUser(emailLower, password, nameTrimmed);
-
-        eventPublisher.publishEvent(new UserCreatedEvent(
-                user.userUuid(),
-                user.email(),
-                user.name(),
-                user.createDtm()
-        ));
-
-        return user;
-    }
 
     public DBUser getUser(final UUID userUuid) {
         return repository.getUser(userUuid);
@@ -146,12 +117,6 @@ public class UserService {
     private static void validateEmail(final String email) throws InvalidEmailException {
         if (!EMAIL_VALIDATOR.isValid(email) || email.length() > USER_EMAIL_MAX_LENGTH) {
             throw new InvalidEmailException();
-        }
-    }
-
-    private static void validatePassword(final String password) throws TooWeakPasswordException {
-        if (password == null || !PASSWORD_PATTERN.matcher(password).matches()) {
-            throw new TooWeakPasswordException();
         }
     }
 

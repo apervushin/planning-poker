@@ -1,7 +1,6 @@
 package in.pervush.poker.configuration;
 
 import in.pervush.poker.controller.LoginController;
-import in.pervush.poker.controller.RegistrationController;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.utils.auth.JwtTokenFilter;
 import in.pervush.poker.utils.auth.RequestHelper;
@@ -23,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 
 @Configuration
-@Import({PasswordEncoderConfiguration.class, PostgresConfiguration.class})
+@Import({PostgresConfiguration.class})
 @Slf4j
 public class SecurityConfiguration {
 
@@ -57,8 +56,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers(
                         LoginController.PATH + "/**",
-                        LoginController.PATH + "**",
-                        RegistrationController.PATH + "**"
+                        LoginController.PATH + "**"
                 )
                 .permitAll()
 

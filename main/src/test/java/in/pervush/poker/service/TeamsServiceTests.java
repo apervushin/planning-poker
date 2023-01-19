@@ -1,6 +1,5 @@
 package in.pervush.poker.service;
 
-import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.ForbiddenException;
@@ -33,7 +32,7 @@ import static org.junit.Assert.assertThrows;
 @SpringJUnitConfig({UsersRepository.class, TeamsService.class, TeamsRepository.class, UsersRepository.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
-@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class})
+@Import({TestPostgresConfiguration.class})
 @Transactional
 public class TeamsServiceTests {
 
@@ -48,7 +47,7 @@ public class TeamsServiceTests {
 
     @BeforeEach
     void init() {
-        user = usersRepository.createUser("text@example.com", "abc", "Test user");
+        user = usersRepository.createUser("text@example.com", "Test user");
     }
 
     @Test
@@ -71,7 +70,7 @@ public class TeamsServiceTests {
 
     @Test
     void inviteTeamMember_success() {
-        final var user = usersRepository.createUser("test@example.com", "pswd", "Test user");
+        final var user = usersRepository.createUser("test@example.com", "Test user");
         final var team = service.createTeam(this.user.userUuid(), "Test team");
         service.inviteTeamMember(team.teamUuid(), this.user.userUuid(), user.email());
         final var membershipStatus = repository.getTeam(team.teamUuid(), user.userUuid()).membershipStatus();
@@ -80,7 +79,7 @@ public class TeamsServiceTests {
 
     @Test
     void inviteTeamMember_teamNotExists_forbiddenException() {
-        final var user = usersRepository.createUser("test@example.com", "pswd", "Test user");
+        final var user = usersRepository.createUser("test@example.com", "Test user");
         final var team = service.createTeam(this.user.userUuid(), "Test team");
         service.inviteTeamMember(team.teamUuid(), this.user.userUuid(), user.email());
 
@@ -90,7 +89,7 @@ public class TeamsServiceTests {
 
     @Test
     void inviteTeamMember_userIsNotTeamOwner_forbiddenException() {
-        final var user = usersRepository.createUser("test@example.com", "pswd", "Test user");
+        final var user = usersRepository.createUser("test@example.com", "Test user");
         final var team = service.createTeam(this.user.userUuid(), "Test team");
 
         assertThrows(ForbiddenException.class, () -> service.inviteTeamMember(team.teamUuid(), user.userUuid(), user.email()));
@@ -98,7 +97,7 @@ public class TeamsServiceTests {
 
     @Test
     void acceptTeamInvitation_success() {
-        final var user = usersRepository.createUser("test@example.com", "pswd", "Test user");
+        final var user = usersRepository.createUser("test@example.com", "Test user");
         final var team = service.createTeam(this.user.userUuid(), "Test team");
         service.inviteTeamMember(team.teamUuid(), this.user.userUuid(), user.email());
 
@@ -109,7 +108,7 @@ public class TeamsServiceTests {
 
     @Test
     void acceptTeamInvitation_noInvitationExists_success() {
-        final var user = usersRepository.createUser("test@example.com", "pswd", "Test user");
+        final var user = usersRepository.createUser("test@example.com", "Test user");
         final var team = service.createTeam(this.user.userUuid(), "Test team");
 
         assertThrows(MembershipNotFoundException.class,
@@ -130,7 +129,7 @@ public class TeamsServiceTests {
     void getTeams_withoutMembershipStatusFilter_success() {
         final var team1 = service.createTeam(user.userUuid(), "Test team 1");
 
-        final var user2 = usersRepository.createUser("test@example.com", "pswd", "Test user");
+        final var user2 = usersRepository.createUser("test@example.com", "Test user");
         final var team2 = service.createTeam(user2.userUuid(), "Test team");
         service.inviteTeamMember(team2.teamUuid(), user2.userUuid(), user.email());
         service.acceptTeamInvitation(team2.teamUuid(), this.user.userUuid());
@@ -155,7 +154,7 @@ public class TeamsServiceTests {
     @Test
     void getTeamMembers_success() {
         final var team = service.createTeam(user.userUuid(), "Test team 1");
-        final var user2 = usersRepository.createUser("text1@example.com", "abc", "Test user");
+        final var user2 = usersRepository.createUser("text1@example.com", "Test user");
         service.inviteTeamMember(team.teamUuid(), user.userUuid(), user2.email());
         final var team2 = repository.getTeam(team.teamUuid(), user2.userUuid());
 
@@ -166,7 +165,7 @@ public class TeamsServiceTests {
     @Test
     void deleteTeamMember_success() {
         final var team = service.createTeam(user.userUuid(), "Test team 1");
-        final var user2 = usersRepository.createUser("text1@example.com", "abc", "Test user");
+        final var user2 = usersRepository.createUser("text1@example.com", "Test user");
         service.inviteTeamMember(team.teamUuid(), user.userUuid(), user2.email());
 
         service.deleteTeamMember(team.teamUuid(), user.userUuid(), user2.userUuid());
@@ -175,9 +174,9 @@ public class TeamsServiceTests {
     @Test
     void deleteTeamMember_userIsNotTeamOwner_forbiddenException() {
         final var team = service.createTeam(user.userUuid(), "Test team 1");
-        final var user2 = usersRepository.createUser("test1@example.com", "abc", "Test user");
+        final var user2 = usersRepository.createUser("test1@example.com", "Test user");
         service.inviteTeamMember(team.teamUuid(), user.userUuid(), user2.email());
-        final var user3 = usersRepository.createUser("test2@example.com", "abc", "Test user");
+        final var user3 = usersRepository.createUser("test2@example.com", "Test user");
         service.inviteTeamMember(team.teamUuid(), user.userUuid(), user3.email());
 
         assertThrows(ForbiddenException.class,
@@ -187,7 +186,7 @@ public class TeamsServiceTests {
     @Test
     void deleteTeamMember_leaveTeam_success() {
         final var team = service.createTeam(user.userUuid(), "Test team 1");
-        final var user2 = usersRepository.createUser("text1@example.com", "abc", "Test user");
+        final var user2 = usersRepository.createUser("text1@example.com", "Test user");
         service.inviteTeamMember(team.teamUuid(), user.userUuid(), user2.email());
 
         service.deleteTeamMember(team.teamUuid(), user2.userUuid(), user2.userUuid());

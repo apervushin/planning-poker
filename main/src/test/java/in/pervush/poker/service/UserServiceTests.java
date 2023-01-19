@@ -1,17 +1,14 @@
 package in.pervush.poker.service;
 
-import in.pervush.poker.configuration.PasswordEncoderConfiguration;
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
 import in.pervush.poker.exception.InvalidConfirmationCodeException;
 import in.pervush.poker.exception.InvalidEmailException;
 import in.pervush.poker.exception.InvalidStepException;
 import in.pervush.poker.exception.InvalidUserNameException;
 import in.pervush.poker.exception.TooManyConfirmationAttemptsException;
-import in.pervush.poker.exception.TooWeakPasswordException;
 import in.pervush.poker.model.events.ConfirmationCodeRequestedEvent;
 import in.pervush.poker.model.events.UserCreatedEvent;
 import in.pervush.poker.repository.UsersRepository;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -40,8 +37,7 @@ import static org.mockito.Mockito.verify;
 @SpringJUnitConfig({UsersRepository.class, UserService.class})
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application.yml")
-@Import({TestPostgresConfiguration.class, PasswordEncoderConfiguration.class,
-        UserServiceTests.MockitoPublisherConfiguration.class})
+@Import({TestPostgresConfiguration.class, UserServiceTests.MockitoPublisherConfiguration.class})
 @Transactional
 public class UserServiceTests {
 
@@ -73,54 +69,10 @@ public class UserServiceTests {
     }
 
     @Test
-    void createAndGetUser_success() {
-        final var expected = service.createUser("test@example.com", "Passw0rd!","Test User");
-        final var actual = service.getUser(expected.userUuid());
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void createAndGetUser_weakPassword_ErrorStatusException() {
-        assertThrows(TooWeakPasswordException.class, () -> service.createUser(
-                "test@example.com",
-                "abc",
-                "Test User"
-        ));
-    }
-
-    @Test
-    void createAndGetUser_localhostEmail_ErrorStatusException() {
-        assertThrows(InvalidEmailException.class, () -> service.createUser(
-                "test@localhost",
-                "abc",
-                "Test User"
-        ));
-    }
-
-    @Test
-    void createAndGetUser_invalidEmail_ErrorStatusException() {
-        assertThrows(InvalidEmailException.class, () -> service.createUser(
-                "test_example.com",
-                "Passw0rd!",
-                "Test User"
-        ));
-    }
-
-    @Test
-    void createUser_tooLongUserName_ErrorStatusException() {
-        assertThrows(InvalidUserNameException.class, () -> service.createUser(
-                "test@localhost",
-                "abc",
-                RandomStringUtils.random(UserService.USER_NAME_NAME_MAX_LENGTH + 1)
-        ));
-    }
-
-    @Test
     void registration_success() {
         final var email = "User@Example.Com";
         final var emailLower = email.toLowerCase();
         final var deviceUuid = UUID.randomUUID();
-        final var password = "Passw0rd!";
         final var name = "User name";
 
         service.loginStep1(email, deviceUuid);

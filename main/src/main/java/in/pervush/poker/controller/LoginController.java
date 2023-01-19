@@ -10,12 +10,10 @@ import in.pervush.poker.exception.TooManyConfirmationAttemptsException;
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.login.LoginStep1Request;
-import in.pervush.poker.model.login.LoginRequest;
 import in.pervush.poker.model.login.LoginStep2Request;
 import in.pervush.poker.model.login.LoginStep2ResponseView;
 import in.pervush.poker.model.login.LoginStep3Request;
 import in.pervush.poker.model.login.LoginStep3ResponseView;
-import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.service.UserService;
 import in.pervush.poker.utils.auth.RequestHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,9 +21,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,40 +34,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-
 import java.util.UUID;
 
 @RestController
 @RequestMapping(value = LoginController.PATH)
 @Tag(name="Login")
 @Validated
-public class LoginController extends AuthenticationController {
+@RequiredArgsConstructor
+public class LoginController {
 
     public static final String PATH = "/api/v1/login";
 
     private final UserService userService;
     private final RequestHelper requestHelper;
-
-    public LoginController(final UsersRepository usersRepository, final RequestHelper requestHelper,
-                           UserService userService) {
-        super(usersRepository, requestHelper);
-        this.userService = userService;
-        this.requestHelper = requestHelper;
-    }
-
-    @Operation(
-            summary = "Login",
-            responses = {
-                    @ApiResponse(responseCode = "201"),
-                    @ApiResponse(responseCode = "403")
-            }
-    )
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Deprecated
-    public ResponseEntity<Void> login(@RequestBody @Valid final LoginRequest request) {
-        return login(request.email(), request.password());
-    }
 
     @Operation(
             summary = "Login step 1",

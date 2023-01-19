@@ -16,12 +16,11 @@ import java.util.UUID;
 public interface UsersMapper {
 
     @Insert("""
-            insert into users(user_uuid, email, password_encoded, name, create_dtm)
-            values(#{user}, #{email}, #{passwordEncoded}, #{name}, #{createDtm})
+            insert into users(user_uuid, email, name, create_dtm)
+            values(#{user}, #{email}, #{name}, #{createDtm})
             """)
     void createUser(@Param("user") UUID userUuid,
                     @Param("email") String email,
-                    @Param("passwordEncoded") String passwordEncoded,
                     @Param("name") String name,
                     @Param("createDtm") Instant createDtm);
 
@@ -29,7 +28,6 @@ public interface UsersMapper {
     @ConstructorArgs(value = {
             @Arg(column = "user_uuid", javaType = UUID.class),
             @Arg(column = "email", javaType = String.class),
-            @Arg(column = "password_encoded", javaType = String.class),
             @Arg(column = "name", javaType = String.class),
             @Arg(column = "create_dtm", javaType = Instant.class),
     })
