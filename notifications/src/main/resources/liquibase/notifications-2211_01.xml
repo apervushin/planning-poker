@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-                   logicalFilePath="2211_01.xml">
+                   logicalFilePath="notifications-2211_01.xml">
     <changeSet id="2022-11-22-push-tokens" author="alex">
         <createTable tableName="push_tokens">
             <column name="user_uuid" type="UUID">

@@ -7,12 +7,18 @@ import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.exception.UserAlreadyAddedException;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.ErrorStatus;
+import in.pervush.poker.model.events.TeamCreatedEvent;
+import in.pervush.poker.model.events.TeamDeletedEvent;
+import in.pervush.poker.model.events.UserJoinedTeamEvent;
+import in.pervush.poker.model.events.UserLeftTeamEvent;
 import in.pervush.poker.model.teams.DBUserTeam;
 import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,19 +30,26 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class TeamsService {
 
     public static final int TEAM_NAME_NAME_MAX_LENGTH = 32;
     private final TeamsRepository teamsRepository;
     private final UsersRepository usersRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public DBUserTeam createTeam(final UUID userUuid, final String teamName) {
         validateTeamName(teamName);
-        return teamsRepository.createTeam(userUuid, teamName);
+        final var team = teamsRepository.createTeam(userUuid, teamName);
+        final var event = new TeamCreatedEvent(team.teamUuid(), team.teamName(), team.userUuid());
+        eventPublisher.publishEvent(event);
+        log.debug("Published event: {}", event);
+        return team;
     }
 
     public void deleteTeam(final UUID teamUuid, final UUID userUuid) throws ForbiddenException {
         teamsRepository.deleteTeam(teamUuid, userUuid);
+        eventPublisher.publishEvent(new TeamDeletedEvent(teamUuid));
     }
 
     public List<DBUserTeam> getTeams(final UUID userUuid, @Nullable MembershipStatus membershipStatus) {
@@ -57,12 +70,14 @@ public class TeamsService {
 
     public void acceptTeamInvitation(final UUID teamUuid, final UUID userUuid) throws MembershipNotFoundException {
         teamsRepository.setMembershipStatus(teamUuid, userUuid, MembershipStatus.MEMBER, MembershipStatus.INVITED);
+        eventPublisher.publishEvent(new UserJoinedTeamEvent(teamUuid, userUuid));
     }
 
     public void deleteTeamMember(final UUID teamUuid, final UUID userUuid, final UUID deletingUserUuid)
             throws ForbiddenException, MembershipNotFoundException {
         validateTeamOwnerOrUserUuidsEquals(teamUuid, userUuid, deletingUserUuid);
         teamsRepository.deleteTeamMember(teamUuid, deletingUserUuid);
+        eventPublisher.publishEvent(new UserLeftTeamEvent(teamUuid, userUuid));
     }
 
     public DBUserTeam validateTeamMemberAndGetTeam(final UUID teamUuid, final UUID userUuid)

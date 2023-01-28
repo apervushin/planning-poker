@@ -3,6 +3,7 @@ package in.pervush.poker.service.push;
 import in.pervush.poker.configuration.tests.TestPostgresConfiguration;
 import in.pervush.poker.model.push.DBPushToken;
 import in.pervush.poker.repository.PushTokensRepository;
+import in.pervush.poker.service.UserTeamSettingsService;
 import in.pervush.poker.service.push.ApnsService;
 import in.pervush.poker.service.push.PushNotificationsService;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 @TestPropertySource(locations = "classpath:application.yml")
 @Import({TestPostgresConfiguration.class})
 @MockBeans({
-        @MockBean(ApnsService.class)
+        @MockBean(ApnsService.class),
+        @MockBean(UserTeamSettingsService.class)
 })
 @Transactional
 @EnableAsync

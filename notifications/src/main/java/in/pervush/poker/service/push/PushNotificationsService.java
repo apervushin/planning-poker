@@ -2,6 +2,7 @@ package in.pervush.poker.service.push;
 
 import in.pervush.poker.model.events.TaskCreatedEvent;
 import in.pervush.poker.repository.PushTokensRepository;
+import in.pervush.poker.service.UserTeamSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +21,7 @@ public class PushNotificationsService {
 
     private final PushTokensRepository pushTokensRepository;
     private final ApnsService apnsService;
+    private final UserTeamSettingsService userTeamSettingsService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void setPushToken(final UUID userUuid, final UUID deviceUuid, final String token) {
@@ -34,6 +36,9 @@ public class PushNotificationsService {
 
         for (final var token : tokens) {
             if (token.userUuid().equals(event.userUuid())) {
+                continue;
+            }
+            if (!userTeamSettingsService.isNewTasksPushNotificationsEnabled(event.teamUuid(), token.userUuid())) {
                 continue;
             }
             apnsService.sendPush(

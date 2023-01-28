@@ -1,5 +1,6 @@
 dependencies {
     implementation(project(":common"))
+    implementation(project(":settings"))
     implementation(group: 'com.eatthepath', name: 'pushy', version: '0.15.1')
     implementation(group: 'org.simplejavamail', name: 'simple-java-mail', version: '7.6.0')
     implementation(group: 'org.simplejavamail', name: 'spring-module', version: '7.6.0')

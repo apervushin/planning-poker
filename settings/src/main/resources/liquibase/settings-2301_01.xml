@@ -1,0 +1,30 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="settings-2301_01.xml">
+
+    <changeSet id="2023-01-25-create-user-team-settings-table" author="alex">
+        <createTable tableName="user_team_settings">
+            <column name="team_uuid" type="uuid" >
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="user_uuid" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="notifications_enabled" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023-01-26-migrate-user-team-settings-table" author="alex">
+        <sql>
+            insert into user_team_settings(team_uuid, user_uuid, notifications_enabled)
+            select team_uuid, user_uuid, true from users_x_teams
+            on conflict do nothing
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
