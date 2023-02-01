@@ -1,5 +1,6 @@
 package in.pervush.poker.controller;
 
+import in.pervush.poker.exception.EmailExistsException;
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.ForbiddenException;
 import in.pervush.poker.exception.InvalidConfirmationCodeException;
@@ -120,6 +121,8 @@ public class LoginController {
             throw new ForbiddenException();
         } catch (final InvalidUserNameException ex) {
             throw new ErrorStatusException(ErrorStatus.INVALID_USER_NAME);
+        } catch (final EmailExistsException ex) {
+            throw new ErrorStatusException(ErrorStatus.USER_EMAIL_EXISTS);
         }
     }
 
