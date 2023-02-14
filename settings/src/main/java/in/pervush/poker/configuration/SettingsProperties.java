@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 public class SettingsProperties {
 
-    private UserTeamSettings userTeam;
+    private UserTeamSettings userTeam = new UserTeamSettings();
 
     @Data
     public static class UserTeamSettings {
