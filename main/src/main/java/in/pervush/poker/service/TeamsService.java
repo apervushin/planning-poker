@@ -56,7 +56,7 @@ public class TeamsService {
         return teamsRepository.getUserTeams(userUuid, membershipStatus);
     }
 
-    public List<DBUserTeam> getTeamMembers(final UUID teamUuid, final UUID userUuid) {
+    public List<DBUserTeam> getTeamMembers(final UUID teamUuid, final UUID userUuid) throws TeamNotFoundException {
         validateTeamMemberAndGetTeam(teamUuid, userUuid);
         return teamsRepository.getTeamMembers(teamUuid);
     }

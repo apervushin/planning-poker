@@ -2,7 +2,6 @@ package in.pervush.poker.controller;
 
 import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.TaskUrlExistsException;
-import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.model.ErrorResponse;
 import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.tasks.CreateTaskRequest;
@@ -21,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -71,21 +70,16 @@ public class TasksController {
                                          @RequestParam(name = "search", required = false) String search,
                                          @RequestParam(name = "finished", required = false) Boolean finished,
                                          @AuthenticationPrincipal final UserDetailsImpl user) {
-        try {
-            return tasksService.getTasks(user.getUserUuid(), teamUuid, search, finished).stream()
-                    .map(v -> {
-                        final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.getUserUuid(), teamUuid);
+        return tasksService.getTasks(user.getUserUuid(), teamUuid, search, finished).stream()
+                .map(v -> {
+                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.getUserUuid(), teamUuid);
 
-                        return TaskView.of(
-                                v,
-                                userService.getUser(v.userUuid()),
-                                votes.stream().map(userService::getUser).collect(Collectors.toList())
-                        );
-                    }).toList();
-        } catch (final TeamNotFoundException ex) {
-            return Collections.emptyList();
-        }
-
+                    return TaskView.of(
+                            v,
+                            userService.getUser(v.userUuid()),
+                            votes.stream().map(userService::getUser).collect(Collectors.toList())
+                    );
+                }).toList();
     }
 
     @Operation(

@@ -4,6 +4,7 @@ import in.pervush.poker.exception.ErrorStatusException;
 import in.pervush.poker.exception.ForbiddenException;
 import in.pervush.poker.exception.MembershipNotFoundException;
 import in.pervush.poker.exception.TaskNotFoundException;
+import in.pervush.poker.exception.TeamNotFoundException;
 import in.pervush.poker.exception.UnauthorizedException;
 import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.ErrorResponse;
@@ -37,6 +38,11 @@ public class ExceptionController {
 
     @ExceptionHandler(MembershipNotFoundException.class)
     public ResponseEntity<Void> handleMembershipNotFoundException() {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(TeamNotFoundException.class)
+    public ResponseEntity<Void> handleTeamNotFoundException() {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 

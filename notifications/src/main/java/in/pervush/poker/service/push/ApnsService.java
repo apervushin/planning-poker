@@ -46,7 +46,7 @@ public class ApnsService {
             }
             final var notification1 = response.getPushNotification();
             if (!response.isAccepted()) {
-                log.error("Push push was not accepted by apns gateway. {}", notification1);
+                log.warn("Push push was not accepted by apns gateway. {}", notification1);
                 return;
             }
             final var reason = response.getRejectionReason();
