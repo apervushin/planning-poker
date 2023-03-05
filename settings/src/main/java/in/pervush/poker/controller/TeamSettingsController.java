@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,12 +30,15 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1/teams/{teamUuid}/settings")
 @Tag(name="Team settings")
-@RequiredArgsConstructor
 @Validated
 @SecurityRequirement(name = "Authorization")
 public class TeamSettingsController {
 
     private final UserTeamSettingsService userTeamSettingsService;
+
+    public TeamSettingsController(UserTeamSettingsService userTeamSettingsService) {
+        this.userTeamSettingsService = userTeamSettingsService;
+    }
 
     @Operation(
             summary = "Get team settings",
@@ -51,7 +53,7 @@ public class TeamSettingsController {
                                                         @AuthenticationPrincipal final UserDetailsImpl user) {
         try {
             final var userTeamSettings = userTeamSettingsService
-                    .getUserTeamSettings(teamUuid, user.getUserUuid());
+                    .getUserTeamSettings(teamUuid, user.userUuid());
             return ResponseEntity.ok(new TeamSettingsView(
                     TeamSettingsUserView.of(userTeamSettings),
                     new TeamSettingsGlobalView()
@@ -74,7 +76,7 @@ public class TeamSettingsController {
                                 @AuthenticationPrincipal final UserDetailsImpl user,
                                 @RequestBody @Valid TeamSettingsUserView request) {
         try {
-            userTeamSettingsService.setUserTeamSettings(teamUuid, user.getUserUuid(),
+            userTeamSettingsService.setUserTeamSettings(teamUuid, user.userUuid(),
                     request.newTasksPushNotificationsEnabled());
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (final SettingsNotFoundException ex) {

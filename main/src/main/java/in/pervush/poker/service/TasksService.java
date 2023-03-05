@@ -8,10 +8,8 @@ import in.pervush.poker.model.ErrorStatus;
 import in.pervush.poker.model.events.TaskCreatedEvent;
 import in.pervush.poker.model.tasks.DBTask;
 import in.pervush.poker.model.tasks.Scale;
-import in.pervush.poker.model.teams.DBUserTeam;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.VotesRepository;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,7 +23,6 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class TasksService {
 
     public static final int TASK_NAME_NAME_MAX_LENGTH = 100;
@@ -36,6 +33,14 @@ public class TasksService {
     private final TeamsService teamsService;
     private final VotesRepository votesRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    public TasksService(TasksRepository tasksRepository, TeamsService teamsService, VotesRepository votesRepository,
+                        ApplicationEventPublisher eventPublisher) {
+        this.tasksRepository = tasksRepository;
+        this.teamsService = teamsService;
+        this.votesRepository = votesRepository;
+        this.eventPublisher = eventPublisher;
+    }
 
     public List<DBTask> getTasks(final UUID userUuid, final UUID teamUuid, @Nullable final String search,
                                  @Nullable final Boolean finished)

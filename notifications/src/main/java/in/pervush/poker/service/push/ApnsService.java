@@ -5,14 +5,14 @@ import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder;
 import com.eatthepath.pushy.apns.util.SimpleApnsPushNotification;
 import in.pervush.poker.configuration.PushProperties;
 import liquibase.util.StringUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
-@Slf4j
 public class ApnsService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApnsService.class);
 
     private static final String ROUTE_PROPERTY_NAME = "route";
     private final ApnsClient apnsClient;
@@ -20,7 +20,7 @@ public class ApnsService {
 
     public ApnsService(final ApnsClient apnsClient, final PushProperties properties) {
         this.apnsClient = apnsClient;
-        this.bundle = properties.getApns().getBundle();
+        this.bundle = properties.apns().bundle();
     }
 
     public void sendPush(final String token, final String title, final String message, final int badgeCount,

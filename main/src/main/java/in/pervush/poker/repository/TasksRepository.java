@@ -7,7 +7,6 @@ import in.pervush.poker.model.tasks.DBUserNotVotedTasksCount;
 import in.pervush.poker.model.tasks.Scale;
 import in.pervush.poker.repository.postgres.TasksMapper;
 import in.pervush.poker.utils.InstantUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
@@ -20,10 +19,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
-@RequiredArgsConstructor
 public class TasksRepository {
 
     private final TasksMapper mapper;
+
+    public TasksRepository(TasksMapper mapper) {
+        this.mapper = mapper;
+    }
 
     public List<DBTask> getNotDeletedTasks(final UUID teamUuid, final UUID requestingUserUuid,
                                            @Nullable final String search, @Nullable final Boolean finished) {

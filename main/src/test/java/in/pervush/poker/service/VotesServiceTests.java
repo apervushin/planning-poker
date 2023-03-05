@@ -74,7 +74,7 @@ public class VotesServiceTests {
     void createVote() {
         final var ex = assertThrows(ErrorStatusException.class,
                 () -> service.createVote(taskUuid, teamUuid, userUuid, VoteValue.SIZE_XS));
-        assertEquals(ErrorStatus.INVALID_VOTE_VALUE, ex.getStatus());
+        assertEquals(ErrorStatus.INVALID_VOTE_VALUE, ex.status);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class VotesServiceTests {
         service.createVote(taskUuid, teamUuid, userUuid, VoteValue.VALUE_3);
         final var ex = assertThrows(ErrorStatusException.class,
                 () -> service.getVotes(taskUuid, teamUuid, userUuid));
-        assertEquals(ErrorStatus.INVALID_TASK_STATUS, ex.getStatus());
+        assertEquals(ErrorStatus.INVALID_TASK_STATUS, ex.status);
     }
 
     @Test

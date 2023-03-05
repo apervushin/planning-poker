@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,7 +37,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1/teams/{teamUuid}/members")
 @Tag(name="Team members")
-@RequiredArgsConstructor
 @Validated
 @SecurityRequirement(name = "Authorization")
 public class TeamMembersController {
@@ -46,6 +44,12 @@ public class TeamMembersController {
     private final TeamsService teamsService;
     private final UserService userService;
     private final VotesRepository votesRepository;
+
+    public TeamMembersController(TeamsService teamsService, UserService userService, VotesRepository votesRepository) {
+        this.teamsService = teamsService;
+        this.userService = userService;
+        this.votesRepository = votesRepository;
+    }
 
     @Operation(
             summary = "Get team members",
@@ -58,7 +62,7 @@ public class TeamMembersController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UserTeamView> getTeamMembers(@PathVariable("teamUuid") final UUID teamUuid,
                                              @AuthenticationPrincipal final UserDetailsImpl user) {
-        return teamsService.getTeamMembers(teamUuid, user.getUserUuid()).stream()
+        return teamsService.getTeamMembers(teamUuid, user.userUuid()).stream()
                 .map(v -> UserTeamView.of(
                         v,
                         userService.getUser(v.userUuid()),
@@ -86,7 +90,7 @@ public class TeamMembersController {
                                  @RequestBody @Valid final InviteTeamMemberRequest request,
                                  @AuthenticationPrincipal final UserDetailsImpl user) {
         try {
-            teamsService.inviteTeamMember(teamUuid, user.getUserUuid(), request.getEmail());
+            teamsService.inviteTeamMember(teamUuid, user.userUuid(), request.email());
         } catch (UserAlreadyAddedException ex) {
             throw new ErrorStatusException(ErrorStatus.USER_ALREADY_ADDED);
         } catch (UserNotFoundException ex) {
@@ -105,7 +109,7 @@ public class TeamMembersController {
     @GetMapping(path = "/accept")
     public void acceptTeamInvitation(@PathVariable("teamUuid") final UUID teamUuid,
                                      @AuthenticationPrincipal final UserDetailsImpl user) {
-        final var userUuid = user.getUserUuid();
+        final var userUuid = user.userUuid();
         teamsService.acceptTeamInvitation(teamUuid, userUuid);
     }
 
@@ -122,7 +126,7 @@ public class TeamMembersController {
     public void deleteTeamMember(@PathVariable("teamUuid") final UUID teamUuid,
                                  @PathVariable("userUuid") final UUID deletingUserUuid,
                                  @AuthenticationPrincipal final UserDetailsImpl user) {
-        final var userUuid = user.getUserUuid();
+        final var userUuid = user.userUuid();
         teamsService.deleteTeamMember(teamUuid, userUuid, deletingUserUuid);
     }
 }

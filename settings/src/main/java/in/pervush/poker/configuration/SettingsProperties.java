@@ -1,16 +1,18 @@
 package in.pervush.poker.configuration;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("settings")
-@Data
-public class SettingsProperties {
+public record SettingsProperties(
+        UserTeamSettings userTeam
+) {
+    public SettingsProperties() {
+        this(new UserTeamSettings());
+    }
 
-    private UserTeamSettings userTeam = new UserTeamSettings();
-
-    @Data
-    public static class UserTeamSettings {
-        private boolean notificationsEnabled = true;
+    public record UserTeamSettings(boolean notificationsEnabled) {
+        public UserTeamSettings() {
+            this(false);
+        }
     }
 }

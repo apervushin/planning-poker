@@ -5,7 +5,6 @@ import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.utils.auth.JwtTokenFilter;
 import in.pervush.poker.utils.auth.RequestHelper;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,13 +22,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @Import({PostgresConfiguration.class})
-@Slf4j
 public class SecurityConfiguration {
 
-    private final String apiDocsPath;
-    private final String swaggerUiPath;
-    private final RequestHelper requestHelper;
-    private final UsersRepository usersRepository;
+    public final String apiDocsPath;
+    public final String swaggerUiPath;
+    public final RequestHelper requestHelper;
+    public final UsersRepository usersRepository;
 
     public SecurityConfiguration(@Value("${springdoc.api-docs.path:}") final String apiDocsPath,
                                  @Value("${springdoc.swagger-ui.path:}") final String swaggerUiPath,

@@ -15,8 +15,6 @@ import in.pervush.poker.model.teams.DBUserTeam;
 import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.repository.TeamsRepository;
 import in.pervush.poker.repository.UsersRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -28,15 +26,22 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class TeamsService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TeamsService.class);
 
     public static final int TEAM_NAME_NAME_MAX_LENGTH = 32;
     private final TeamsRepository teamsRepository;
     private final UsersRepository usersRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    public TeamsService(TeamsRepository teamsRepository, UsersRepository usersRepository,
+                        ApplicationEventPublisher eventPublisher) {
+        this.teamsRepository = teamsRepository;
+        this.usersRepository = usersRepository;
+        this.eventPublisher = eventPublisher;
+    }
 
     public DBUserTeam createTeam(final UUID userUuid, final String teamName) {
         validateTeamName(teamName);

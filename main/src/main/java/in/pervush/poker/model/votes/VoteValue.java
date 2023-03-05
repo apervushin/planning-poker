@@ -1,10 +1,7 @@
 package in.pervush.poker.model.votes;
 
 import in.pervush.poker.model.tasks.Scale;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public enum VoteValue {
 
     // Fibonacci
@@ -24,6 +21,9 @@ public enum VoteValue {
     SIZE_L(Scale.CLOTHES_SIZE),
     SIZE_XL(Scale.CLOTHES_SIZE);
 
-    @Getter
-    private final Scale scale;
+    public final Scale scale;
+
+    VoteValue(Scale scale) {
+        this.scale = scale;
+    }
 }

@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,7 +47,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/v1/teams/{teamUuid}/tasks")
 @Tag(name="Team tasks")
-@RequiredArgsConstructor
 @Validated
 @SecurityRequirement(name = "Authorization")
 public class TasksController {
@@ -56,6 +54,12 @@ public class TasksController {
     private final TasksService tasksService;
     private final VotesService votesService;
     private final UserService userService;
+
+    public TasksController(TasksService tasksService, VotesService votesService, UserService userService) {
+        this.tasksService = tasksService;
+        this.votesService = votesService;
+        this.userService = userService;
+    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -70,9 +74,9 @@ public class TasksController {
                                          @RequestParam(name = "search", required = false) String search,
                                          @RequestParam(name = "finished", required = false) Boolean finished,
                                          @AuthenticationPrincipal final UserDetailsImpl user) {
-        return tasksService.getTasks(user.getUserUuid(), teamUuid, search, finished).stream()
+        return tasksService.getTasks(user.userUuid(), teamUuid, search, finished).stream()
                 .map(v -> {
-                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.getUserUuid(), teamUuid);
+                    final var votes = votesService.getVotedUserUuids(v.taskUuid(), user.userUuid(), teamUuid);
 
                     return TaskView.of(
                             v,
@@ -94,7 +98,7 @@ public class TasksController {
     public TaskView getTask(@PathVariable("teamUuid") final UUID teamUuid,
                             @PathVariable("taskUuid") final UUID taskUuid,
                             @AuthenticationPrincipal final UserDetailsImpl user) {
-        final var userUuid = user.getUserUuid();
+        final var userUuid = user.userUuid();
         final var dbTask = tasksService.getTask(taskUuid, userUuid, teamUuid);
         final var taskUser = userService.getUser(dbTask.userUuid());
         final var userUuids = votesService.getVotedUserUuids(taskUuid, userUuid, teamUuid);
@@ -118,13 +122,13 @@ public class TasksController {
         try {
             return TaskView.of(
                     tasksService.createTask(
-                            user.getUserUuid(),
-                            request.getName(),
-                            request.getUrl(),
-                            request.getScale(),
+                            user.userUuid(),
+                            request.name(),
+                            request.url(),
+                            request.scale(),
                             teamUuid
                     ),
-                    userService.getUser(user.getUserUuid()),
+                    userService.getUser(user.userUuid()),
                     Collections.emptyList()
             );
         } catch (TaskUrlExistsException ex) {
@@ -146,7 +150,7 @@ public class TasksController {
     public void finishTask(@PathVariable("teamUuid") final UUID teamUuid,
                            @PathVariable("taskUuid") final UUID taskUuid,
                            @AuthenticationPrincipal final UserDetailsImpl user) {
-        tasksService.finishTask(taskUuid, user.getUserUuid(), teamUuid);
+        tasksService.finishTask(taskUuid, user.userUuid(), teamUuid);
     }
 
     @Operation(
@@ -164,7 +168,7 @@ public class TasksController {
     public void activateTask(@PathVariable("teamUuid") final UUID teamUuid,
                              @PathVariable("taskUuid") final UUID taskUuid,
                              @AuthenticationPrincipal final UserDetailsImpl user) {
-        tasksService.activateTask(taskUuid, user.getUserUuid(), teamUuid);
+        tasksService.activateTask(taskUuid, user.userUuid(), teamUuid);
     }
 
     @Deprecated
@@ -183,7 +187,7 @@ public class TasksController {
     public void deleteTask(@PathVariable("teamUuid") final UUID teamUuid,
                            @PathVariable("taskUuid") final UUID taskUuid,
                            @AuthenticationPrincipal final UserDetailsImpl user) {
-        tasksService.deleteTasks(Set.of(taskUuid), user.getUserUuid(), teamUuid);
+        tasksService.deleteTasks(Set.of(taskUuid), user.userUuid(), teamUuid);
     }
 
     @Operation(
@@ -200,7 +204,7 @@ public class TasksController {
     public void deleteTasks(@PathVariable("teamUuid") final UUID teamUuid,
                             @RequestBody @Valid final DeleteTasksRequest request,
                             @AuthenticationPrincipal final UserDetailsImpl user) {
-        tasksService.deleteTasks(request.getTaskUuids(), user.getUserUuid(), teamUuid);
+        tasksService.deleteTasks(request.taskUuids(), user.userUuid(), teamUuid);
     }
 
     @GetMapping(path = "/votesStat", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -221,7 +225,7 @@ public class TasksController {
     ) {
         final var startDtm = getOrDefault(startTm, InstantUtils.now().minus(Duration.of(30, ChronoUnit.DAYS)));
         final var endDtm = getOrDefault(endTm, InstantUtils.now());
-        final var userUuid = user.getUserUuid();
+        final var userUuid = user.userUuid();
 
         final var usersVotesStat = votesService
                 .getVotesStat(teamUuid, userUuid, startDtm, endDtm).stream()

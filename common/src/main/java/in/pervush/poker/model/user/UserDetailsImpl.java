@@ -1,6 +1,5 @@
 package in.pervush.poker.model.user;
 
-import lombok.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -8,11 +7,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
-@Value
-public class UserDetailsImpl implements UserDetails {
-
-    String email;
-    UUID userUuid;
+public record UserDetailsImpl(
+        String email,
+        UUID userUuid
+) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

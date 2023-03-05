@@ -14,7 +14,6 @@ import in.pervush.poker.model.events.UserCreatedEvent;
 import in.pervush.poker.model.login.LoginState;
 import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.UsersRepository;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.logging.log4j.util.Strings;
@@ -29,7 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     public static final int USER_NAME_NAME_MAX_LENGTH = 50;
@@ -42,6 +40,11 @@ public class UserService {
 
     private final Cache<UUID, LoginState> loginAttemptsCache = CacheBuilder.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(15)).build();
+
+    public UserService(UsersRepository repository, ApplicationEventPublisher eventPublisher) {
+        this.repository = repository;
+        this.eventPublisher = eventPublisher;
+    }
 
     public DBUser getUser(final UUID userUuid) {
         return repository.getUser(userUuid);

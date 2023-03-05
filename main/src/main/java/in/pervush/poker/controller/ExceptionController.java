@@ -23,7 +23,7 @@ public class ExceptionController {
 
     @ExceptionHandler(ErrorStatusException.class)
     public ResponseEntity<ErrorResponse> handleErrorStatusException(final ErrorStatusException ex) {
-        return new ResponseEntity<>(new ErrorResponse(ex.getStatus()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorResponse(ex.status), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TaskNotFoundException.class)

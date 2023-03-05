@@ -65,7 +65,7 @@ public class TeamsServiceTests {
                 user.userUuid(),
                 RandomStringUtils.random(TeamsService.TEAM_NAME_NAME_MAX_LENGTH + 1)
         ));
-        Assertions.assertEquals(ErrorStatus.INVALID_TEAM_NAME, exception.getStatus());
+        Assertions.assertEquals(ErrorStatus.INVALID_TEAM_NAME, exception.status);
     }
 
     @Test
@@ -104,6 +104,17 @@ public class TeamsServiceTests {
         service.acceptTeamInvitation(team.teamUuid(), user.userUuid());
         final var membershipStatus = repository.getTeam(team.teamUuid(), user.userUuid()).membershipStatus();
         Assertions.assertEquals(MembershipStatus.MEMBER, membershipStatus);
+    }
+
+    @Test
+    void acceptTeamInvitation_twice_membershipNotFoundException() {
+        final var user = usersRepository.createUser("test@example.com", "Test user");
+        final var team = service.createTeam(this.user.userUuid(), "Test team");
+        service.inviteTeamMember(team.teamUuid(), this.user.userUuid(), user.email());
+        service.acceptTeamInvitation(team.teamUuid(), user.userUuid());
+
+        assertThrows(MembershipNotFoundException.class,
+                () -> service.acceptTeamInvitation(team.teamUuid(), user.userUuid()));
     }
 
     @Test

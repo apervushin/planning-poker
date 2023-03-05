@@ -18,14 +18,14 @@ public class PushConfiguration {
     public ApnsClient apnsClient(final PushProperties properties)
             throws IOException, NoSuchAlgorithmException, InvalidKeyException {
 
-        final var apnsProperties = properties.getApns();
+        final var apnsProperties = properties.apns();
 
         return new ApnsClientBuilder()
                 .setApnsServer(ApnsClientBuilder.PRODUCTION_APNS_HOST)
                 .setSigningKey(ApnsSigningKey.loadFromPkcs8File(
-                        new File(apnsProperties.getP8KeyPath()),
-                        apnsProperties.getTeamId(),
-                        apnsProperties.getKeyId()
+                        new File(apnsProperties.p8KeyPath()),
+                        apnsProperties.teamId(),
+                        apnsProperties.keyId()
                 ))
                 .build();
     }

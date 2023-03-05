@@ -1,20 +1,21 @@
 package in.pervush.poker.configuration;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "auth")
-@Data
-public class AuthenticationProperties {
+public record AuthenticationProperties(
+        Cookie cookie,
+        String jwtSecret
+) {
 
-    private Cookie cookie = new Cookie();
-    private String jwtSecret;
-
-    @Data
-    public static class Cookie {
-        private Duration ttl = Duration.ofDays(31);
-        private boolean ssl = true;
+    public record Cookie (
+            Duration ttl,
+            boolean ssl
+    ) {
+        public Cookie() {
+            this(Duration.ofDays(31), true);
+        }
     }
 }

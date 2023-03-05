@@ -3,16 +3,18 @@ package in.pervush.poker.repository;
 import in.pervush.poker.exception.SettingsNotFoundException;
 import in.pervush.poker.model.DBUserTeamSettings;
 import in.pervush.poker.repository.postgres.UserTeamSettingsMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 @Repository
-@RequiredArgsConstructor
 public class UserTeamSettingsRepository {
 
     private final UserTeamSettingsMapper mapper;
+
+    public UserTeamSettingsRepository(UserTeamSettingsMapper mapper) {
+        this.mapper = mapper;
+    }
 
     public void createUser(final DBUserTeamSettings settings) {
         mapper.createUser(settings);

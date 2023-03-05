@@ -120,7 +120,7 @@ public class TasksServiceTests {
                 Scale.FIBONACCI,
                 teamUuid
         ));
-        assertEquals(ErrorStatus.INVALID_TASK_NAME, ex.getStatus());
+        assertEquals(ErrorStatus.INVALID_TASK_NAME, ex.status);
     }
 
     @Test
@@ -132,7 +132,7 @@ public class TasksServiceTests {
                 Scale.FIBONACCI,
                 teamUuid
         ));
-        assertEquals(ErrorStatus.INVALID_TASK_NAME, ex.getStatus());
+        assertEquals(ErrorStatus.INVALID_TASK_NAME, ex.status);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class TasksServiceTests {
                 Scale.FIBONACCI,
                 teamUuid
         ));
-        assertEquals(ErrorStatus.INVALID_TASK_URL, ex.getStatus());
+        assertEquals(ErrorStatus.INVALID_TASK_URL, ex.status);
     }
 
     @Test

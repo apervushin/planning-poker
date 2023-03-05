@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -19,11 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name="User")
-@RequiredArgsConstructor
 @Validated
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @Operation(
             summary = "Get my profile",
@@ -36,7 +38,7 @@ public class UserController {
     @SecurityRequirement(name = "Authorization")
     public UserPrivateView getUser(@AuthenticationPrincipal final UserDetailsImpl user) {
         try {
-            final var dbUser = userService.getUser(user.getUserUuid());
+            final var dbUser = userService.getUser(user.userUuid());
             return UserPrivateView.of(dbUser);
         } catch (UserNotFoundException ex) {
             throw new UnauthorizedException();

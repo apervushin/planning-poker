@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,12 +28,15 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1/notifications/push")
 @Tag(name="Push notifications")
-@RequiredArgsConstructor
 @Validated
 @SecurityRequirement(name = "Authorization")
 public class PushNotificationsController {
 
     private final PushNotificationsService pushNotificationsService;
+
+    public PushNotificationsController(PushNotificationsService pushNotificationsService) {
+        this.pushNotificationsService = pushNotificationsService;
+    }
 
     @Operation(
             summary = "Set push token",
@@ -49,6 +51,6 @@ public class PushNotificationsController {
     public void setPushToken(@RequestBody @Valid SetPushTokenRequest request,
                              @RequestHeader(RequestHelper.DEVICE_UUID_HEADER_NAME) @Valid UUID deviceUuid,
                              @AuthenticationPrincipal final UserDetailsImpl user) {
-        pushNotificationsService.setPushToken(user.getUserUuid(), deviceUuid, request.token());
+        pushNotificationsService.setPushToken(user.userUuid(), deviceUuid, request.token());
     }
 }

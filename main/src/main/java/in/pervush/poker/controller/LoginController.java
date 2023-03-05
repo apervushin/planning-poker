@@ -23,7 +23,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -41,13 +40,17 @@ import java.util.UUID;
 @RequestMapping(value = LoginController.PATH)
 @Tag(name="Login")
 @Validated
-@RequiredArgsConstructor
 public class LoginController {
 
     public static final String PATH = "/api/v1/login";
 
     private final UserService userService;
     private final RequestHelper requestHelper;
+
+    public LoginController(UserService userService, RequestHelper requestHelper) {
+        this.userService = userService;
+        this.requestHelper = requestHelper;
+    }
 
     @Operation(
             summary = "Login step 1",
@@ -85,7 +88,7 @@ public class LoginController {
             final var user = userService.loginStep2(request.confirmationCode(), deviceUuid);
             return user.map(dbUser -> new LoginStep2ResponseView(
                     LoginStep2ResponseView.LoginStep1Status.EXISTING_USER,
-                    requestHelper.setAuthCookie(dbUser.userUuid())
+                    requestHelper.getAuthToken(dbUser.userUuid())
             )).orElseGet(() -> new LoginStep2ResponseView(
                     LoginStep2ResponseView.LoginStep1Status.NEW_USER,
                     null
@@ -114,7 +117,7 @@ public class LoginController {
                                         @RequestHeader(RequestHelper.DEVICE_UUID_HEADER_NAME) @Valid UUID deviceUuid) {
         try {
             final var user = userService.loginStep3(request.name(), deviceUuid);
-            return new LoginStep3ResponseView(requestHelper.setAuthCookie(user.userUuid()));
+            return new LoginStep3ResponseView(requestHelper.getAuthToken(user.userUuid()));
         } catch (final InvalidStepException ex) {
             throw new ErrorStatusException(ErrorStatus.INVALID_STEP);
         } catch (final BadCredentialsException ex) {

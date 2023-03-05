@@ -3,7 +3,6 @@ package in.pervush.poker.service.push;
 import in.pervush.poker.model.events.TaskCreatedEvent;
 import in.pervush.poker.repository.PushTokensRepository;
 import in.pervush.poker.service.UserTeamSettingsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class PushNotificationsService {
 
     private static final int MAX_USER_DEVICES_TO_SEND_PUSH = 5;
@@ -22,6 +20,13 @@ public class PushNotificationsService {
     private final PushTokensRepository pushTokensRepository;
     private final ApnsService apnsService;
     private final UserTeamSettingsService userTeamSettingsService;
+
+    public PushNotificationsService(PushTokensRepository pushTokensRepository, ApnsService apnsService,
+                                    UserTeamSettingsService userTeamSettingsService) {
+        this.pushTokensRepository = pushTokensRepository;
+        this.apnsService = apnsService;
+        this.userTeamSettingsService = userTeamSettingsService;
+    }
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void setPushToken(final UUID userUuid, final UUID deviceUuid, final String token) {

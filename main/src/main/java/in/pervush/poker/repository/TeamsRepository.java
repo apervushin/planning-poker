@@ -8,7 +8,6 @@ import in.pervush.poker.model.teams.DBUserTeam;
 import in.pervush.poker.model.teams.MembershipStatus;
 import in.pervush.poker.repository.postgres.TeamsMapper;
 import in.pervush.poker.utils.InstantUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,10 +18,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-@RequiredArgsConstructor
 public class TeamsRepository {
 
     private final TeamsMapper mapper;
+
+    public TeamsRepository(TeamsMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Transactional(propagation = Propagation.MANDATORY)
     public DBUserTeam createTeam(final UUID ownerUserUuid, final String teamName) {

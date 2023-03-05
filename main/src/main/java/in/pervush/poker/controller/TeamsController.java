@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +35,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1/teams")
 @Tag(name="Teams")
-@RequiredArgsConstructor
 @Validated
 @SecurityRequirement(name = "Authorization")
 public class TeamsController {
@@ -44,6 +42,12 @@ public class TeamsController {
     private final TeamsService teamsService;
     private final UserService userService;
     private final VotesRepository votesRepository;
+
+    public TeamsController(TeamsService teamsService, UserService userService, VotesRepository votesRepository) {
+        this.teamsService = teamsService;
+        this.userService = userService;
+        this.votesRepository = votesRepository;
+    }
 
     @Operation(
             summary = "Create team",
@@ -57,8 +61,8 @@ public class TeamsController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserTeamView createTeam(@RequestBody @Valid final CreateTeamRequest request,
                                    @AuthenticationPrincipal final UserDetailsImpl user) {
-        final var userUuid = user.getUserUuid();
-        final var userTeam = teamsService.createTeam(userUuid, request.getTeamName());
+        final var userUuid = user.userUuid();
+        final var userTeam = teamsService.createTeam(userUuid, request.teamName());
         return UserTeamView.of(userTeam, userService.getUser(userUuid), 0);
     }
 
@@ -74,7 +78,7 @@ public class TeamsController {
             @RequestParam(name = "membershipStatus", required = false) MembershipStatus membershipStatus,
             @AuthenticationPrincipal final UserDetailsImpl user
     ) {
-        final var userUuid = user.getUserUuid();
+        final var userUuid = user.userUuid();
         return teamsService.getTeams(userUuid, membershipStatus).stream()
                 .map(v -> UserTeamView.of(
                         v, userService.getUser(v.userUuid()),
@@ -94,7 +98,7 @@ public class TeamsController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTeam(@PathVariable final UUID teamUuid,
                            @AuthenticationPrincipal final UserDetailsImpl user) {
-        teamsService.deleteTeam(teamUuid, user.getUserUuid());
+        teamsService.deleteTeam(teamUuid, user.userUuid());
     }
 
     @Operation(
@@ -109,6 +113,6 @@ public class TeamsController {
     @ResponseStatus(HttpStatus.CREATED)
     public void leaveTeam(@PathVariable final UUID teamUuid,
                           @AuthenticationPrincipal final UserDetailsImpl user) {
-        teamsService.deleteTeamMember(teamUuid, user.getUserUuid(), user.getUserUuid());
+        teamsService.deleteTeamMember(teamUuid, user.userUuid(), user.userUuid());
     }
 }

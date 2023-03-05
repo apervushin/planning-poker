@@ -1,17 +1,13 @@
 package in.pervush.poker.model.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.ToString;
 
 import java.util.UUID;
 
-@Getter
-@ToString(callSuper = true)
 public class UserPrivateView extends UserPublicView {
 
     @Schema(required = true)
-    String email;
+    public final String email;
 
     private UserPrivateView(final UUID userUuid, final String name, final String email) {
         super(userUuid, name);

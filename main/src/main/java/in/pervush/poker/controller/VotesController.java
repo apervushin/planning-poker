@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,11 +37,15 @@ import java.util.stream.Collectors;
 @Tag(name="Task votes")
 @Validated
 @SecurityRequirement(name = "Authorization")
-@RequiredArgsConstructor
 public class VotesController {
 
     private final VotesService votesService;
     private final UserService userService;
+
+    public VotesController(VotesService votesService, UserService userService) {
+        this.votesService = votesService;
+        this.userService = userService;
+    }
 
     @Operation(
             summary = "Vote",
@@ -58,8 +61,8 @@ public class VotesController {
                            @PathVariable("taskUuid") final UUID taskUuid,
                            @RequestBody @Valid CreateVoteRequest request,
                            @AuthenticationPrincipal final UserDetailsImpl user) {
-        final var vote = request.getValue();
-        votesService.createVote(taskUuid, teamUuid, user.getUserUuid(), vote);
+        final var vote = request.value();
+        votesService.createVote(taskUuid, teamUuid, user.userUuid(), vote);
     }
 
     @Operation(
@@ -74,7 +77,7 @@ public class VotesController {
     public List<VotesStatView> getVotes(@PathVariable("teamUuid") final UUID teamUuid,
                                         @PathVariable("taskUuid") final UUID taskUuid,
                                         @AuthenticationPrincipal final UserDetailsImpl user) {
-        return votesService.getVotes(taskUuid, teamUuid, user.getUserUuid()).stream()
+        return votesService.getVotes(taskUuid, teamUuid, user.userUuid()).stream()
                 .map(v -> Pair.of(v, userService.getUser(v.userUuid())))
                 .collect(Collectors.groupingBy(
                         a -> a.getLeft().vote(),

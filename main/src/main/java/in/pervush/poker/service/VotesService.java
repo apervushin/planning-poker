@@ -10,7 +10,6 @@ import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.TasksRepository;
 import in.pervush.poker.repository.UsersRepository;
 import in.pervush.poker.repository.VotesRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,7 +18,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class VotesService {
 
     private final VotesRepository votesRepository;
@@ -27,12 +25,20 @@ public class VotesService {
     private final TasksRepository tasksRepository;
     private final TeamsService teamsService;
 
+    public VotesService(VotesRepository votesRepository, UsersRepository usersRepository,
+                        TasksRepository tasksRepository, TeamsService teamsService) {
+        this.votesRepository = votesRepository;
+        this.usersRepository = usersRepository;
+        this.tasksRepository = tasksRepository;
+        this.teamsService = teamsService;
+    }
+
 
     public void createVote(final UUID taskUuid, final UUID teamUuid, final UUID userUuid, final VoteValue voteValue) {
         teamsService.validateTeamMemberAndGetTeam(teamUuid, userUuid);
         final var dbTask = tasksRepository.getNotDeletedTask(taskUuid, teamUuid, userUuid);
 
-        if (dbTask.scale() != voteValue.getScale()) {
+        if (dbTask.scale() != voteValue.scale) {
             throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
         }
 
@@ -70,7 +76,7 @@ public class VotesService {
     }
 
     private void validateTaskScale(final DBTask dbTask, final VoteValue voteValue) {
-        if (dbTask.scale() != voteValue.getScale()) {
+        if (dbTask.scale() != voteValue.scale) {
             throw new ErrorStatusException(ErrorStatus.INVALID_VOTE_VALUE);
         }
     }

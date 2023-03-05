@@ -1,13 +1,16 @@
 package in.pervush.poker.exception;
 
 import in.pervush.poker.model.ErrorStatus;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import lombok.Value;
 
-@Value
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 public class ErrorStatusException extends RuntimeException {
-    ErrorStatus status;
+    public final ErrorStatus status;
+
+    public ErrorStatusException(ErrorStatus status) {
+        this.status = status;
+    }
+
+    @Override
+    public String getMessage() {
+        return String.format("Error status: %s", status);
+    }
 }

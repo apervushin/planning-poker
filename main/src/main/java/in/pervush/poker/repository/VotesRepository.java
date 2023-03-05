@@ -5,7 +5,6 @@ import in.pervush.poker.model.votes.DBVote;
 import in.pervush.poker.model.votes.VoteValue;
 import in.pervush.poker.repository.postgres.VotesMapper;
 import in.pervush.poker.utils.InstantUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -13,10 +12,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-@RequiredArgsConstructor
 public class VotesRepository {
 
     private final VotesMapper mapper;
+
+    public VotesRepository(VotesMapper mapper) {
+        this.mapper = mapper;
+    }
 
     public void createVote(final UUID taskUuid, final UUID votingUserUuid, final VoteValue vote) {
         mapper.createVote(taskUuid, votingUserUuid, vote, InstantUtils.now());

@@ -8,7 +8,6 @@ import in.pervush.poker.exception.UserNotFoundException;
 import in.pervush.poker.model.user.DBUser;
 import in.pervush.poker.repository.postgres.UsersMapper;
 import in.pervush.poker.utils.InstantUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +18,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Repository
-@RequiredArgsConstructor
 public class UsersRepository {
 
     private final UsersMapper mapper;
@@ -33,6 +31,10 @@ public class UsersRepository {
                     return mapper.getUser(userUuid);
                 }
             });
+
+    public UsersRepository(UsersMapper mapper) {
+        this.mapper = mapper;
+    }
 
     public DBUser createUser(final String email, final String name) throws EmailExistsException {
         final var userUuid = UUID.randomUUID();
