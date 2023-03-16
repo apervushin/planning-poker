@@ -26,7 +26,7 @@ public class RequestHelper {
         return JWT.create()
                 .withIssuer(JWT_ISSUER)
                 .withIssuedAt(now)
-                .withExpiresAt(now.plus(authenticationProperties.cookie().ttl()))
+                .withExpiresAt(now.plus(authenticationProperties.sessionTtl()))
                 .withSubject(userUuid.toString())
                 .sign(Algorithm.HMAC512(authenticationProperties.jwtSecret()));
     }

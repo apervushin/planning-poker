@@ -6,16 +6,8 @@ import java.time.Duration;
 
 @ConfigurationProperties(prefix = "auth")
 public record AuthenticationProperties(
-        Cookie cookie,
+        Duration sessionTtl,
         String jwtSecret
 ) {
 
-    public record Cookie (
-            Duration ttl,
-            boolean ssl
-    ) {
-        public Cookie() {
-            this(Duration.ofDays(31), true);
-        }
-    }
 }
